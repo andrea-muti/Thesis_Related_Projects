@@ -75,7 +75,7 @@ public class ResponseTimeReader {
     									   
     	String table = "my_table"; 			// assumiamo inoltre che in questo keyspace ci sia la table my_table solita 
     	
-    	System.out.println("\n **** CLUSTER NODES Response Time READER ****\n");   	
+    	System.out.println("\n **** CLUSTER NODES Response Time READER V2 ****\n");   	
                    
         List<String> live_nodes = getNodesAddresses(contact_point_addr, jmx_port);
         
