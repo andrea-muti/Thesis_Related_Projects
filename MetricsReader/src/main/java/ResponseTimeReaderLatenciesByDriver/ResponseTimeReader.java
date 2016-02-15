@@ -77,7 +77,7 @@ public class ResponseTimeReader {
     									   
     	String table = "my_table"; 			// assumiamo inoltre che in questo keyspace ci sia la table my_table solita 
     	
-    	System.out.println("\n **** CLUSTER NODES Response Time READER V1 ****\n");   	
+    	System.out.println("\n **** CLUSTER NODES Response Time READER V2 ****\n");   	
                    
         List<String> live_nodes = getNodesAddresses(contact_point_addr, jmx_port);
         
@@ -173,15 +173,23 @@ public class ResponseTimeReader {
         		Metrics metrics = session.getCluster().getMetrics();
         		
 				Timer requests_timer = metrics.getRequestsTimer();
+				
 				Snapshot snap = requests_timer.getSnapshot();
+				
+				
 		      	double mean_latency = snap.getMean()/1000;
+		      	double p90 = snap.getValue(0.90)/1000;
 	      	    double p95 = snap.get95thPercentile()/1000;
+	      	    double p97 = snap.getValue(0.97)/1000;
 	      	    double p99 = snap.get99thPercentile()/1000;
-	      	   
+	      	    
+				
 				try {
 					resultBufferedWriter.write( MyHour.getCurrentMoment()+DELIMITER+
 											    mean_latency+DELIMITER+ 
+											    p90+DELIMITER+
 											    p95+DELIMITER+
+											    p97+DELIMITER+
 											    p99+DELIMITER+
 											    (i+1)+DELIMITER+ 						// num operations executed
 											    success+DELIMITER+						// num successful operations
