@@ -24,9 +24,9 @@ import javafx.stage.Stage;
  *  prende le latenze dal Driver Datastax (senza quindi calcolarle esplicitamente)
  *  
  *  le linee del file sono nel formato : 
- *  	     11:52:37:831;  5633.678835630229; 10812.307; 10812.307;    5;          5;       0;
- *      	 [timestamp]    [mean latency]     [perc95]   [perc99]   [executed] [success] [failed]
- *  tok_n :      0               1                2         3            4         5         6
+ *  	     11:52:37:831;  5633.678835630229; 10812.307; 10812.307; xxxx ;   5;          5;       0;
+ *      	 [timestamp]    [mean latency]     [perc95]   [perc99]        [executed] [success] [failed]
+ *  tok_n :      0               1                2         3         4         5         6        7
  * 
  * @author andrea-muti
  *
@@ -79,10 +79,14 @@ public class ResTimeChart extends Application {
     	XYChart.Series<Number, Number> series_mean = new XYChart.Series<Number, Number>();
     	XYChart.Series<Number, Number> series_p95 = new XYChart.Series<Number, Number>();
     	XYChart.Series<Number, Number> series_p99 = new XYChart.Series<Number, Number>();
-
+    	XYChart.Series<Number, Number> series_p97 = new XYChart.Series<Number, Number>();
+    	XYChart.Series<Number, Number> series_p90 = new XYChart.Series<Number, Number>();
+    	
 	    series_mean.setName(name+" [Mean]");
 	    series_p95.setName(name+" [95Percentile]");
 	    series_p99.setName(name+" [99Percentile]");
+	    series_p97.setName(name+" [97]");
+	    series_p90.setName(name+" [90]");
 
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
@@ -103,8 +107,10 @@ public class ResTimeChart extends Application {
 				StringTokenizer st = new StringTokenizer(line,";");
 				String timestamp_string = st.nextToken();  // token 0
 				String mean_latency_value_string = st.nextToken(); // token 1
-				String p95_latency_value_string = st.nextToken(); // token 2
-				String p99_latency_value_string = st.nextToken(); // token 3
+				String p90_latency_value_string = st.nextToken(); // token 2
+				String p95_latency_value_string = st.nextToken(); // token 3
+				String p97_latency_value_string = st.nextToken(); // token 4
+				String p99_latency_value_string = st.nextToken(); // token 5
 				
 		        Date date = sdf.parse("1970-01-01 " + timestamp_string);
 
@@ -116,27 +122,27 @@ public class ResTimeChart extends Application {
 		        
 		        double time = (double) (time_value-start_time_value);
 				
-		      
-		        
 				double value = Double.parseDouble(mean_latency_value_string )/1000;  // <-- millisec 
+				double value90 = Double.parseDouble(p90_latency_value_string )/1000; // <-- millisec 
 				double value95 = Double.parseDouble(p95_latency_value_string )/1000; // <-- millisec 
 				double value99 = Double.parseDouble(p99_latency_value_string )/1000; // <-- millisec 
+				double value97 = Double.parseDouble(p97_latency_value_string )/1000;
 				
 			    series_mean.getData().add(new XYChart.Data<Number, Number>(time, value));
+			    series_p90.getData().add(new XYChart.Data<Number, Number>(time, value90));
 			    series_p95.getData().add(new XYChart.Data<Number, Number>(time, value95));
 			    series_p99.getData().add(new XYChart.Data<Number, Number>(time, value99));
-				
+			    series_p97.getData().add(new XYChart.Data<Number, Number>(time, value97));
+			    
 				line = reader.readLine();
-				//line=reader.readLine();
-				//line=reader.readLine();
-				
 				
 			}
 			reader.close();
 			lineChart.getData().add(series_mean);
-			//lineChart.getData().add(series_p95);
-			
-			//lineChart.getData().add(series_p99);
+			lineChart.getData().add(series_p90);
+			lineChart.getData().add(series_p95);
+			lineChart.getData().add(series_p97);
+			lineChart.getData().add(series_p99);
 			
 		} catch (IOException e) {
 			System.err.println("Error in opening|writing|closing the file: "+file_path);
