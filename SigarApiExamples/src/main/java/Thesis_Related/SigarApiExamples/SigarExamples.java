@@ -10,6 +10,7 @@ import org.hyperic.sigar.SigarException;
  * Examples of utilization of the SIGAR API
  * 
  * [this line was written on Github]
+ * [this line was written on Eclipse]
  *
  */
 public class SigarExamples {
