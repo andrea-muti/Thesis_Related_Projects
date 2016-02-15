@@ -8,6 +8,8 @@ import org.hyperic.sigar.SigarException;
 
 /**
  * Examples of utilization of the SIGAR API
+ * 
+ * [this line was written on Github]
  *
  */
 public class SigarExamples {
