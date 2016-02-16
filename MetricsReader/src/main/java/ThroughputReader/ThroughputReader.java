@@ -173,7 +173,7 @@ public class ThroughputReader {
 		  			final double end = System.nanoTime();
 		  			double elapsed = (double)( (end - start) / 1000000000 );
 		  			String elapsed_seconds = String.format( "%.2f", elapsed ).replace(",", ".");
-		  			//System.out.println(this.ip_address+" : countRD : "+countRD+" - countWR: "+countWR);
+		  			System.out.println(this.ip_address+" : countRD : "+countRD+" - countWR: "+countWR);
 		  			double throughput_total = countRD + countWR;
 		  			
 		  			try {
