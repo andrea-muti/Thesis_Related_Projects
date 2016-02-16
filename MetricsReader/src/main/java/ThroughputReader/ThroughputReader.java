@@ -81,6 +81,26 @@ public class ThroughputReader {
 		
 		return countRead;
 	}
+	
+//---------------------------------------------------------------------------------------------	
+
+	private static long getWriteCount(MBeanServerConnection connection) {
+		long countRead = 0;
+		try{
+			//get an instance of the OperatingSystem Mbean
+			Object osMbean = connection.getAttribute(new ObjectName("org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency"),"Count");
+			long count = (long) osMbean;
+			
+			// usually takes a couple of seconds before we get real values
+		    if (count == -1.0)      return -1;
+		    
+		    // returns a percentage value with 1 decimal point precision
+		    countRead = count;
+		}
+		catch(Exception e){ countRead = -1; }
+		
+		return countRead;
+	}
 
 //---------------------------------------------------------------------------------------------
 	
@@ -125,7 +145,8 @@ public class ThroughputReader {
 		  			System.err.println("ERROR : There are connection errors in establishing the connnection with the node \n[ "+e.getMessage()+" ]");
 		  		}
 
-		  		double count = 0;
+		  		double countRD = 0;
+		  		double countWR = 0;
 		  		
 		  		MBeanServerConnection connection = jmxc.getMBeanServerConnection();
 		  	
@@ -135,19 +156,25 @@ public class ThroughputReader {
 		  		//create a loop to get values every second (optional)
 		  		for (int i = 0; i < this.samples_count ; i++) {
 
-		  			long startcount = System.currentTimeMillis();
+		  			long startcountrd = System.currentTimeMillis();
 		  			double readCountstart = getReadCount(connection);
+		  			long startcountwr = System.currentTimeMillis();
+		  			double writeCountstart = getWriteCount(connection);
 		  			Thread.sleep(1000);
 		  			double readCountend = getReadCount(connection);
-		  			long endcount = System.currentTimeMillis();
+		  			long endcountrd = System.currentTimeMillis();
+		  			double writeCountend = getWriteCount(connection);
+		  			long endcountwr = System.currentTimeMillis();
+		  			
+		  			
+		  			countRD = (readCountend - readCountstart) / ((endcountrd - startcountrd)/1000);
+		  			countWR = (writeCountend - writeCountstart) / ((endcountwr - startcountwr)/1000);
 		  			
 		  			final double end = System.nanoTime();
-		  			count = (readCountend - readCountstart) / ((endcount-startcount)/1000);
-		  			
 		  			double elapsed = (double)( (end - start) / 1000000000 );
 		  			String elapsed_seconds = String.format( "%.2f", elapsed ).replace(",", ".");
-				
-		  			double throughput = count;
+		  			System.out.println(this.ip_address+" : countRD : "+countRD+" - countWR: "+countWR);
+		  			double throughput = countRD + countWR;
 		  			
 		  			try {
 		  				String content = elapsed_seconds + " " + throughput;
