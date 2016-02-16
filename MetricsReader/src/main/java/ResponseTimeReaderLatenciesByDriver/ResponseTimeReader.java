@@ -257,7 +257,7 @@ public class ResponseTimeReader {
         
         /**
          * qui andrebbero chiusi i file/buffer writers ma se rimande while(true) mi dice
-         * unreachable code ...  vedere se si può evitare il while(true)
+         * unreachable code ...  
          */
   
 	} // end main
