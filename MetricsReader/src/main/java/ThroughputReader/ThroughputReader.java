@@ -174,10 +174,10 @@ public class ThroughputReader {
 		  			double elapsed = (double)( (end - start) / 1000000000 );
 		  			String elapsed_seconds = String.format( "%.2f", elapsed ).replace(",", ".");
 		  			System.out.println(this.ip_address+" : countRD : "+countRD+" - countWR: "+countWR);
-		  			double throughput = countRD + countWR;
+		  			double throughput_total = countRD + countWR;
 		  			
 		  			try {
-		  				String content = elapsed_seconds + " " + throughput;
+		  				String content = elapsed_seconds + " " + throughput_total;
 		  				writer.append(content+"\n");	
 		  				writer.flush();
 		  			}
