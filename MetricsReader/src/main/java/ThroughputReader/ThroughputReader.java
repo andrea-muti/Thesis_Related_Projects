@@ -168,7 +168,7 @@ public class ThroughputReader {
 		  			
 		  			
 		  			countRD = (readCountend - readCountstart) / ((endcountrd - startcountrd)/1000);
-		  			countWR = (writeCountend - writeCountstart) / ((endcountwr - startcountwr)/1000);
+		  			countWR = (writeCountend - writeCountstart) / ((endcountwr - startcountwr)/1000); 
 		  			
 		  			final double end = System.nanoTime();
 		  			double elapsed = (double)( (end - start) / 1000000000 );
