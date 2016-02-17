@@ -44,7 +44,7 @@ public class ResponseTimeReader {
     	check_contact_point_address(contact_point_addr);
 		
     	// int samplesCount = args[1] <- parse int;
-		int samplesCount = 8000;
+		int samplesCount = 120;
 		
 		// int op_interval_msec = args[2] <-- parse int , check se è un int
 		int op_interval_msec = 500;
@@ -105,9 +105,11 @@ public class ResponseTimeReader {
         Cluster cluster;
         Session session = null;
         
+        int iterazione_while=0;
+        
         while(true){
-        	
-        	System.out.println(" - opening new session");
+        	iterazione_while++;
+        	System.out.println(" - [iterazione while n* "+iterazione_while+"] opening new session");
         	
         	// AD OGNI ITERAZIONE DEL WHILE APRIAMO UNA NUOVA SESSIONE CON CASSANDRA PER FARE 
         	// IN MODO CHE LE METRICS COLLEZIONATE SI AZZERINO
@@ -191,8 +193,7 @@ public class ResponseTimeReader {
 	        		System.out.println("error on key: "+random_key+" | "+e.getMessage());
 	        		failed++;
 	        	}
-	        	
-	        	
+	        	       	
 	        	//  ogni 'update_interval_msec' aggiorno il file
 	        	if( System.currentTimeMillis() - now >= update_interval_msec ){
 	        		
@@ -202,21 +203,22 @@ public class ResponseTimeReader {
 	        		
 					Timer requests_timer = metrics.getRequestsTimer();
 					
+					
 					Snapshot snap = requests_timer.getSnapshot();
 									
 			      	double mean_latency = snap.getMean()/1000;
-			      	double p90 = snap.getValue(0.90)/1000;
+			      	//double p90 = snap.getValue(0.90)/1000;
 		      	    double p95 = snap.get95thPercentile()/1000;
-		      	    double p97 = snap.getValue(0.97)/1000;
-		      	    double p99 = snap.get99thPercentile()/1000;
+		      	    //double p97 = snap.getValue(0.97)/1000;
+		      	    //double p99 = snap.get99thPercentile()/1000;
 		      	    				
 					try {
 						resultBufferedWriter.write( MyHour.getCurrentMoment()+DELIMITER+
 												    mean_latency+DELIMITER+ 
-												    p90+DELIMITER+
+												    //p90+DELIMITER+
 												    p95+DELIMITER+
-												    p97+DELIMITER+
-												    p99+DELIMITER+
+												    //p97+DELIMITER+
+												    //p99+DELIMITER+
 												    (i+1)+DELIMITER+ 						// num operations executed
 												    success+DELIMITER+						// num successful operations
 												    failed+DELIMITER+"\n");				  	// num failed operations
