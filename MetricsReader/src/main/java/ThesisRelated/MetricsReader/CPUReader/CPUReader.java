@@ -28,7 +28,7 @@ public class CPUReader {
     	check_contact_point_address(contact_point_addr);
 		
     	// int samplesCount = args[1] <- parse int;
-		int samplesCount = 2000;
+		int samplesCount = 8000;
 		
 		// int sampling_interval_msec = args[2] <-- parse int
 		int sampling_interval_msec = 1000;
