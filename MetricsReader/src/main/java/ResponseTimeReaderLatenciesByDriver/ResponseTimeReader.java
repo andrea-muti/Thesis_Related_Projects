@@ -43,9 +43,11 @@ public class ResponseTimeReader {
     	String contact_point_addr = "192.168.0.169";
     	check_contact_point_address(contact_point_addr);
 		
+    	// numero di samples prima di aprire una nuova session (i.e. azzerare le metrics)
     	// int samplesCount = args[1] <- parse int;
 		int samplesCount = 120;
 		
+		// intervallo tra una operazione e la successiva
 		// int op_interval_msec = args[2] <-- parse int , check se è un int
 		int op_interval_msec = 500;
 
@@ -60,7 +62,7 @@ public class ResponseTimeReader {
 		String cl = "ONE";
 		ConsistencyLevel consistency_level = consistency_parser(cl);
 		
-		
+		// ogni quando aggiorno il file con i risultati
 		// int update_interval_msec = args[2] <-- parse int, check se è davvero un int
 		int update_interval_msec = 2000;
 		
@@ -104,8 +106,7 @@ public class ResponseTimeReader {
         
         Cluster cluster;
         Session session = null;
-        
-        
+ 
         while(true){
         	
         	// AD OGNI ITERAZIONE DEL WHILE APRIAMO UNA NUOVA SESSIONE CON CASSANDRA PER FARE 
