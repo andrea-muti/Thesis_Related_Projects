@@ -30,7 +30,7 @@ public class ThroughputReader {
     	check_contact_point_address(contact_point_addr);
 		
     	// int samplesCount = args[1] <- parse int;
-		int samplesCount = 2000;
+		int samplesCount = 8000;
 		
 		// int sampling_interval_msec = args[2] <-- parse int
 		int sampling_interval_msec = 1000;
@@ -172,7 +172,7 @@ public class ThroughputReader {
 		  			final double end = System.nanoTime();
 		  			double elapsed = (double)( (end - start) / 1000000000 );
 		  			String elapsed_seconds = String.format( "%.2f", elapsed ).replace(",", ".");
-		  			//System.out.println(this.ip_address+" : countRD : "+countRD+" - countWR: "+countWR);
+		  			
 		  			double throughput_total = countRD + countWR;
 		  			
 		  			try {
