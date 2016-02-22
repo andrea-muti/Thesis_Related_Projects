@@ -36,6 +36,7 @@ import org.apache.log.Logger;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.github.cqljmeter.config.ClusterHolder;
@@ -67,9 +68,16 @@ public abstract class AbstractCqlSampler extends AbstractSampler implements Test
 		
 		result.sampleStart();   // sampleStart()  e sampleEnd() vengono usati da JMeter per calcolare i response times
 		try {
-			ResultSet data = getSession(keySpace).execute(statement);
-			result.setResponseData(getStringFrom(data).getBytes());
-			result.setResponseMessage(data.toString());
+			/** ORIGINALE - SINCRONO
+				ResultSet data = getSession(keySpace).execute(statement);
+				result.setResponseData(getStringFrom(data).getBytes());
+				result.setResponseMessage(data.toString());
+			 **/
+			
+			/** Modifica 22/02/2016 - ASINCRONO **/
+			@SuppressWarnings("unused")
+			ResultSetFuture datafuture = getSession(keySpace).executeAsync(statement);
+			
 		} catch (Exception ex) {
 			log.error(String.format("Error executing CQL statement [%s]", getQuery()), ex);
 			result.setResponseMessage(ex.toString());
@@ -128,6 +136,7 @@ public abstract class AbstractCqlSampler extends AbstractSampler implements Test
 		this.consistency = consistency;
 	}
 	
+	@SuppressWarnings("unused")
 	private String getStringFrom(ResultSet input) {
 		return Joiner.on("\n").join(input);
 	}
