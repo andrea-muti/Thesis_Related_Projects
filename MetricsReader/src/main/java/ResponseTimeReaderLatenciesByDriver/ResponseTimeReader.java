@@ -72,7 +72,7 @@ public class ResponseTimeReader {
     									   
     	String table = "my_table"; 			// assumiamo inoltre che in questo keyspace ci sia la table my_table solita 
     	
-    	System.out.println("\n **** CLUSTER NODES Response Time READER V2 ****\n");   	
+    	System.out.println("\n **** CLUSTER NODES Response Time READER ****\n");   	
                    
         List<String> live_nodes = getNodesAddresses(contact_point_addr, jmx_port);
         
@@ -105,11 +105,8 @@ public class ResponseTimeReader {
         Cluster cluster;
         Session session = null;
         
-        int iterazione_while=0;
         
         while(true){
-        	iterazione_while++;
-        	System.out.println(" - [iterazione while n* "+iterazione_while+"] opening new session");
         	
         	// AD OGNI ITERAZIONE DEL WHILE APRIAMO UNA NUOVA SESSIONE CON CASSANDRA PER FARE 
         	// IN MODO CHE LE METRICS COLLEZIONATE SI AZZERINO
@@ -202,8 +199,7 @@ public class ResponseTimeReader {
 	        		Metrics metrics = session.getCluster().getMetrics();
 	        		
 					Timer requests_timer = metrics.getRequestsTimer();
-					
-					
+									
 					Snapshot snap = requests_timer.getSnapshot();
 									
 			      	double mean_latency = snap.getMean()/1000;
