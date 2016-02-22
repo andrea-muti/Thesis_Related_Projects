@@ -166,7 +166,6 @@ public class ThroughputReader {
 		  			double writeCountend = getWriteCount(connection);
 		  			long endcountwr = System.currentTimeMillis();
 		  			 
-		  			
 		  			countRD = (readCountend - readCountstart) / ((endcountrd - startcountrd)/1000);
 		  			countWR = (writeCountend - writeCountstart) / ((endcountwr - startcountwr)/1000); 
 		  			
