@@ -250,8 +250,7 @@ public class ResponseTimeReader {
 	  		}catch(Exception e){System.err.println("Error closing the session");}
 	  		
 	  		cluster.close();
-	  		System.out.println(" - closed current session");
-        
+	  		        
         } // end while
         
         /**

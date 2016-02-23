@@ -50,8 +50,8 @@ public class LatencyChart extends Application {
         lineChart.setCreateSymbols(false);  
                 
         add_line_to_chart(lineChart, file_paths.get(0), "lat_vm0");
-       // add_line_to_chart(lineChart, file_paths.get(1), "lat_vm1");
-        //add_line_to_chart(lineChart, file_paths.get(2), "lat_vm2");
+        add_line_to_chart(lineChart, file_paths.get(1), "lat_vm1");
+        add_line_to_chart(lineChart, file_paths.get(2), "lat_vm2");
       
         //add_line_to_chart_cumulative(lineChart, file_paths, "total_throughput");
         

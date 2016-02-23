@@ -97,8 +97,7 @@ public class InstantThroughputChart extends Application {
 			System.err.println("Error in opening|writing|closing the file");
 			e.printStackTrace();
 		}
-	    
-	    
+	   
 	    // carico i restanti files
 	    for(int i=1; i<file_paths.size(); i++){
 	    	int j = 0;
@@ -110,13 +109,14 @@ public class InstantThroughputChart extends Application {
 				String line = reader.readLine();
 				
 				while ( line != null ){
+					if(j>=values.size()){break;}
 					StringTokenizer st = new StringTokenizer(line);
 					double time = Double.parseDouble(st.nextToken()); 
 					double value = Double.parseDouble(st.nextToken()); 
-
+					
 					values.set(j, value+values.get(j));
 					times.set(j, time+times.get(j));
-					
+
 					j++;
 					line = reader.readLine();
 				}

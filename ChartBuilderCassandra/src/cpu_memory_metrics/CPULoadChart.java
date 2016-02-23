@@ -80,6 +80,9 @@ public class CPULoadChart extends Application {
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
 				
 				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
 			}
 			reader.close();
 			lineChart.getData().add(series);
