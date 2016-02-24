@@ -31,7 +31,7 @@ public class SigarExamples {
     }
     
     public static void init_sigar(){
-    	String s= "/home/andrea-muti/workspace/SigarApiExamples/lib";
+    	String s= "/home/andrea-muti/git/Thesis_Related_Projects/SigarApiExamples/lib";
         System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + s);
     	sigar = new Sigar();
     }

@@ -19,5 +19,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="/SSHManager"/>
+	<classpathentry exported="true" kind="lib" path="/home/andrea-muti/git/Thesis_Related_Projects/SigarApiExamples/lib"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
