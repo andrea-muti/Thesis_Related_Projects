@@ -10,11 +10,14 @@ public class CPUReader implements Callable<Double> {
 	
 	private String ip_address;
 	private String jmx_port_number;
+	private int num_samples;
+	private int sampling_interval;
 	
-	
-	public CPUReader(String ip, String jmx_port){
+	public CPUReader(String ip, String jmx_port, int num_samp, int sampling_inter){
 		this.ip_address=ip;
 		this.jmx_port_number=jmx_port;
+		this.num_samples = num_samp;
+		this.sampling_interval = sampling_inter;
 	}
 	
     public Double call() {
@@ -44,8 +47,15 @@ public class CPUReader implements Callable<Double> {
         // ---------- Retrieve CPU Level ---------
         
 		// TO DO : invece di prendere un valore singolo , prendere una serie e fare la media
+		for(int i = 0; i<this.num_samples; i++){
+			cpu_level = cpu_level + node_reader.getCPULevel(node_remote);
+			System.out.println("    - sample n:"+i+" of node "+this.ip_address+" : "+cpu_level);
+			try {
+				Thread.sleep(sampling_interval);
+			} catch (InterruptedException e) {}
+		}
 		
-		cpu_level = node_reader.getCPULevel(node_remote);
+		cpu_level = cpu_level / num_samples ;
 		
        
         // ----------------------------------------------------
