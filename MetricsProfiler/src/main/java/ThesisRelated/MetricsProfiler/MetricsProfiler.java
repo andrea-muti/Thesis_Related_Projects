@@ -10,5 +10,6 @@ package ThesisRelated.MetricsProfiler;
 public class MetricsProfiler {
     public static void main( String[] args ){
         System.out.println("This is the MetricsProfiler");
+        System.out.println("seconda print");
     }
 }
