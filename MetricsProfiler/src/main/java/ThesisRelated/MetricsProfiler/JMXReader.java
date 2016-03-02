@@ -126,4 +126,43 @@ public class JMXReader {
         
     	return live_nodes;
     }
+    
+    @SuppressWarnings("unchecked")
+	public int getNodesNumber(MBeanServerConnection remote){
+    	List<String> live_nodes = null;
+    	String objname = "org.apache.cassandra.db:type=StorageService";
+        try {
+			ObjectName bean = new ObjectName(objname);	
+			live_nodes = (List<String>) remote.getAttribute(bean, "LiveNodes");
+		}
+        catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException |
+         	   MBeanException | ReflectionException	| IOException e) {} 
+        
+    	return live_nodes.size();
+    }
+    
+    // -----------------------------------------------------------------------------
+
+	
+	
+	public double getCPULevel(MBeanServerConnection connection) {
+		double processCPUload = 0;
+		try{
+			//get an instance of the OperatingSystem Mbean
+			Object osMbean = connection.getAttribute(new ObjectName("java.lang:type=OperatingSystem"),"ProcessCpuLoad");
+			double cpuload_value = (double) osMbean;
+			
+			// usually takes a couple of seconds bfore we get real values
+		    if (cpuload_value == -1.0)      return Double.NaN;
+		    
+		    // returns a percentage value with 1 decimal point precision
+		    processCPUload = ( (double)(cpuload_value * 1000) / 10.0);
+		}
+		catch(Exception e){ processCPUload = -1; }
+		
+		String processCPUload_formatted = String.format( "%.3f", processCPUload ).replace(",", ".");
+		return Double.parseDouble(processCPUload_formatted) ;
+	}
+
+	
 }
