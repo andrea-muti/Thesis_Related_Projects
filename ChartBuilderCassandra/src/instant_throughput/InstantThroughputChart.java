@@ -51,9 +51,9 @@ public class InstantThroughputChart extends Application {
         add_line_to_chart(lineChart, file_paths.get(0), "vm0");
         add_line_to_chart(lineChart, file_paths.get(1), "vm1");
         add_line_to_chart(lineChart, file_paths.get(2), "vm2");
-        //add_line_to_chart(lineChart, file_paths.get(3), "vm3");
-        //add_line_to_chart(lineChart, file_paths.get(4), "vm4");
-        //add_line_to_chart(lineChart, file_paths.get(5), "vm5");
+        add_line_to_chart(lineChart, file_paths.get(3), "vm3");
+        add_line_to_chart(lineChart, file_paths.get(4), "vm4");
+        add_line_to_chart(lineChart, file_paths.get(5), "vm5");
       
         add_line_to_chart_cumulative(lineChart, file_paths, "total");
         
@@ -116,7 +116,7 @@ public class InstantThroughputChart extends Application {
 					
 					values.set(j, value+values.get(j));
 					times.set(j, time+times.get(j));
-
+				
 					j++;
 					line = reader.readLine();
 				}
