@@ -54,6 +54,8 @@ public class JMXReader {
 			System.err.println("error closing the jmx connection");
 		}
 	}
+	
+	// ----------------------------------------------------------------------------------------------
 
 	
     // dovrebbe ritornare un valore tra
@@ -71,6 +73,8 @@ public class JMXReader {
         
     	return mode;
     }
+	
+	// -----------------------------------------------------------------------------------------
     
     public boolean hasJoined(MBeanServerConnection remote){
     	boolean joined = false;
@@ -85,6 +89,8 @@ public class JMXReader {
         return joined;
     }
     
+    // ---------------------------------------------------------------------------------------
+    
     public boolean isStarting(MBeanServerConnection remote){
     	boolean starting = false;
     	String objname = "org.apache.cassandra.db:type=StorageService";
@@ -98,6 +104,7 @@ public class JMXReader {
     	return starting;
     }
     
+    //-----------------------------------------------------------------------------------------------
 
     public String getLoad(MBeanServerConnection remote){
     	String load = null;
@@ -112,7 +119,8 @@ public class JMXReader {
     	return load;
     }
     
-
+    // -----------------------------------------------------------------------------------------------
+    
     @SuppressWarnings("unchecked")
 	public List<String> getLiveNodes(MBeanServerConnection remote){
     	List<String> live_nodes = null;
@@ -126,6 +134,8 @@ public class JMXReader {
         
     	return live_nodes;
     }
+    
+    // ------------------------------------------------------------------------------------------
     
     @SuppressWarnings("unchecked")
 	public int getNodesNumber(MBeanServerConnection remote){
@@ -143,7 +153,6 @@ public class JMXReader {
     
     // -----------------------------------------------------------------------------
 
-	
 	
 	public double getCPULevel(MBeanServerConnection connection) {
 		double processCPUload = 0;
@@ -163,6 +172,84 @@ public class JMXReader {
 		String processCPUload_formatted = String.format( "%.3f", processCPUload ).replace(",", ".");
 		return Double.parseDouble(processCPUload_formatted) ;
 	}
+	
+	public double getThroughputLevel(MBeanServerConnection connection){
+	
+		double throughput_total=0;
+
+	  		double countRD = 0;
+	  		double countWR = 0;
+
+  			long startcountrd = System.currentTimeMillis();
+  			double readCountstart = getReadCount(connection);
+  			long startcountwr = System.currentTimeMillis();
+  			double writeCountstart = getWriteCount(connection);
+		
+			try{Thread.sleep(1000);}
+			catch(Exception e){}
+  						
+  			double readCountend = getReadCount(connection);
+  			long endcountrd = System.currentTimeMillis();
+  			double writeCountend = getWriteCount(connection);
+  			long endcountwr = System.currentTimeMillis();
+  			 
+  			double elapsed_rd = ((endcountrd - startcountrd)/1000);
+  			double elapsed_wr = ((endcountwr - startcountwr)/1000);
+  			if(elapsed_rd==0){elapsed_rd = 1;}
+  			if(elapsed_wr==0){elapsed_wr = 1;}
+  			
+  			countRD = (readCountend - readCountstart) / elapsed_rd;
+  			countWR = (writeCountend - writeCountstart) / elapsed_wr; 
+	
+  			throughput_total = countRD + countWR;
+
+		
+		return throughput_total;
+	}
+	
+	
+	//---------------------------------------------------------------------------------------------	
+
+	private static long getReadCount(MBeanServerConnection connection) {
+		long countRead = 0;
+		try{
+			//get an instance of the OperatingSystem Mbean
+			Object osMbean = connection.getAttribute(new ObjectName("org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency"),"Count");
+			long count = (long) osMbean;
+			
+			// usually takes a couple of seconds before we get real values
+		    if (count == -1.0)      return -1;
+		    
+		    // returns a percentage value with 1 decimal point precision
+		    countRead = count;
+		}
+		catch(Exception e){ countRead = -1; }
+		
+		return countRead;
+	}
+
+		
+	//---------------------------------------------------------------------------------------------	
+
+	private static long getWriteCount(MBeanServerConnection connection) {
+		long countRead = 0;
+		try{
+			//get an instance of the OperatingSystem Mbean
+			Object osMbean = connection.getAttribute(new ObjectName("org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency"),"Count");
+			long count = (long) osMbean;
+			
+			// usually takes a couple of seconds before we get real values
+		    if (count == -1.0)      return -1;
+		    
+		    // returns a percentage value with 1 decimal point precision
+		    countRead = count;
+		}
+		catch(Exception e){ countRead = -1; }
+		
+		return countRead;
+	}
+
+	//---------------------------------------------------------------------------------------------
 
 	
 }

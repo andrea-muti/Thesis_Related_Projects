@@ -6,14 +6,14 @@ import java.util.concurrent.Callable;
 import javax.management.MBeanServerConnection;
 
 
-public class CPUReader implements Callable<Double> {
+public class ThroughputReader implements Callable<Double> {
 	
 	private String ip_address;
 	private String jmx_port_number;
 	private int num_samples;
 	private int sampling_interval;
 	
-	public CPUReader(String ip, String jmx_port, int num_samp, int sampling_inter){
+	public ThroughputReader(String ip, String jmx_port, int num_samp, int sampling_inter){
 		this.ip_address=ip;
 		this.jmx_port_number=jmx_port;
 		this.num_samples = num_samp;
@@ -22,7 +22,7 @@ public class CPUReader implements Callable<Double> {
 	
     public Double call() {
         
-    	double cpu_level = 0;
+    	double throughput_level = 0;
     	
     	JMXReader node_reader = new JMXReader(this.ip_address, ""+this.jmx_port_number);
         MBeanServerConnection node_remote = null;
@@ -44,16 +44,19 @@ public class CPUReader implements Callable<Double> {
 			System.exit(-1);
 		}
 	
-        // ---------- Retrieve CPU Level ---------
-        // prendo num_samples campioni ad un rate di 1sample ogni sampling_interval msec e ne faccio la media
+        // ---------- Retrieve Throughput  ---------
+        
+		 // prendo num_samples campioni ad un rate di 1sample ogni sampling_interval msec e ne faccio la media
 		for(int i = 0; i<this.num_samples; i++){
-			cpu_level = cpu_level + node_reader.getCPULevel(node_remote);
 			try {
 				Thread.sleep(sampling_interval);
 			} catch (InterruptedException e) {}
+			double sample = node_reader.getThroughputLevel(node_remote);
+			throughput_level = throughput_level + sample ;
+			
 		}
 		
-		cpu_level = cpu_level / this.num_samples ;
+		throughput_level = throughput_level / this.num_samples ;
 		
        
         // ----------------------------------------------------
@@ -61,7 +64,7 @@ public class CPUReader implements Callable<Double> {
         node_reader.disconnect();
 
     
-        return cpu_level;
+        return throughput_level;
     }
     
     

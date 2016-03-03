@@ -29,24 +29,31 @@ public class MetricsProfiler {
         int input_rate;				// preso come parametro
         int num_nodes;				// leggo dal java_driver
         double cpu_level; 			// leggo da cassandra jmx
-        int throughput_total;		// calcolo leggendo da cassandra jmx
+        double throughput_total;		// calcolo leggendo da cassandra jmx
         double rt_mean;				// leggo da java_driver
         double rt_95p;				// leggo da java_driver
         
         List<String> addresses;
         
         // TO DO : LEGGERE DA ARGS
-        String contact_point_address = "192.168.0.169";
+        //String contact_point_address = "192.168.0.169";
+        String contact_point_address = "127.0.0.1";
         check_contact_point_address(contact_point_address);
         
         // TO DO : LEGGERE DA ARGS , check isValidPortNumber
-        String jmx_port = "7199";
+        String jmx_port = "7201";
         
         // TO DO: LEGGERE DA ARGS e check
         int cpu_num_samples = 5;
         
         // TO DO : LEGGERE DA ARGS e check
         int cpu_sampling_interval_msec = 500;
+        
+        // TO DO: LEGGERE DA ARGS e check
+        int throughput_num_samples = 5;
+        
+        // TO DO : LEGGERE DA ARGS e check
+        int throughput_sampling_interval_msec = 500;
         
         //------------------------------------------------------------------------------
         
@@ -64,7 +71,16 @@ public class MetricsProfiler {
         /**    LETTURA AVERAGE CPU LEVEL OF NODES   **/
         cpu_level = getAverageCpuLevel(jmx_port, addresses, cpu_num_samples, cpu_sampling_interval_msec);
         
-        System.out.println(" - Average CPU Level : "+cpu_level);
+        System.out.println(" - Average CPU Level : "+cpu_level+" %");
+        
+        
+        
+        //------------------------------------------------------------------------------
+        
+        /**    LETTURA AVERAGE TOTAL THROUGHPUT OF NODES   **/
+        throughput_total = getAverageTotalThroughput(jmx_port, addresses, throughput_num_samples, throughput_sampling_interval_msec);
+        
+        System.out.println(" - Average Total Throughput : "+throughput_total+" ops/sec");
         
     } // END MAIN
     
@@ -104,7 +120,7 @@ public class MetricsProfiler {
     private static double getAverageCpuLevel( String jmx_port_number, List<String> addresses, 
     										  int num_samples, int sampling_interval){
     	
-    	System.out.println("\n - Computing Average CPU Level ");
+    	System.out.println("\n - Computing Average CPU Level [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
     	double cpu_level_to_return = 0;
     
     	int n_nodes = addresses.size();
@@ -120,9 +136,15 @@ public class MetricsProfiler {
      	for( int i=0; i<n_nodes; i++ ){
      		
      		String IP_address = addresses.get(i);
+     		
+     		if(i==0){jmx_port_number="7201";}
+     		else if(i==1){jmx_port_number="7202"; }
+     		else if(i==2){jmx_port_number="7203";}
+     		else{jmx_port_number="7199";}
+     		IP_address="127.0.0.1";
+
   		
             task_List.add(i, service.submit(new CPUReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));
-            System.out.println("    - started CPU Reader collector for node ("+IP_address+":"+""+jmx_port_number+")");
      		
      	
      	}// end of for loop
@@ -135,7 +157,7 @@ public class MetricsProfiler {
      		try {
      			Double returned_cpu_level = f.get();
      			
-     			System.out.println("     - cpu of node "+i+" : "+returned_cpu_level);
+     			System.out.println("     - cpu of node "+i+" : "+returned_cpu_level+" %");
      			cpu_levels_array[i] = returned_cpu_level;
      			i++;
      		}
@@ -150,6 +172,62 @@ public class MetricsProfiler {
      	return cpu_level_to_return;
     	
     }	
+    
+    //---------------------------------------------------------------------------------------------
+    
+    private static double getAverageTotalThroughput( String jmx_port_number, List<String> addresses,
+    												 int num_samples, int sampling_interval){
+    
+    	System.out.println("\n - Computing Average Total Throughput [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
+    	double throughtput_to_return = 0;
+    
+    	int n_nodes = addresses.size();
+    		
+    	final ExecutorService service;
+        List<Future<Double>>  task_List = new ArrayList<Future<Double>>();
+        
+        service = Executors.newFixedThreadPool(n_nodes);     
+        
+     	// per ogni nodo nel cluster, colleziona le statistics
+     	for( int i=0; i<n_nodes; i++ ){
+     		
+     		String IP_address = addresses.get(i);
+     		
+     		
+     		if(i==0){jmx_port_number="7201";}
+     		else if(i==1){jmx_port_number="7202"; }
+     		else if(i==2){jmx_port_number="7203";}
+     		else{jmx_port_number="7199";}
+     		IP_address="127.0.0.1";
+  		
+            task_List.add(i, service.submit(new ThroughputReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));
+     		
+     	
+     	}// end of for loop
+     	
+         service.shutdownNow();
+     
+     	// getting the results of the collector threads
+        int i = 0;
+     	for(Future<Double> f : task_List){
+     		try {
+     			Double returned_throughput = f.get();
+     			
+     			System.out.println("     - throughput of node "+i+" : "+returned_throughput+" ops/sec");
+     			throughtput_to_return = throughtput_to_return + returned_throughput;
+     			i++;
+     		}
+     		catch(Exception e){ }
+     	}
+     	
+     	
+     	String throughput_formatted = String.format( "%.3f", throughtput_to_return ).replace(",", ".");
+     	throughtput_to_return =  Double.parseDouble(throughput_formatted) ;
+     	
+     	return throughtput_to_return;
+    	
+    }
+    
     
     //---------------------------------------------------------------------------------------------
     
