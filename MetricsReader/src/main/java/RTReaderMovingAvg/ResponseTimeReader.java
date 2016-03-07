@@ -1,4 +1,4 @@
-package ResponseTimeReaderLatenciesByDriver;
+package RTReaderMovingAvg;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -7,16 +7,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServerConnection;
 
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Snapshot;
-import com.codahale.metrics.Timer;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Metrics;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
@@ -41,19 +39,23 @@ public class ResponseTimeReader {
 				
 		//String contact_point_addr = args[0];
     	String contact_point_addr = "192.168.0.169";
+    	//String contact_point_addr = "127.0.0.1";
     	check_contact_point_address(contact_point_addr);
-		
-    	// numero di samples prima di aprire una nuova session (i.e. azzerare le metrics)
-    	// int samplesCount = args[1] <- parse int;
-		int samplesCount = 120;
-		
+    	
+    	String jmx_port = "7199";		   // stiamo assumento che la jmx port impostata nei nodi sia la 7199
+    	//String jmx_port = "7201";
+    	
+    	// size della moving average windows
+    	int window_size = 50;
+    	
 		// intervallo tra una operazione e la successiva
 		// int op_interval_msec = args[2] <-- parse int , check se è un int
-		int op_interval_msec = 500;
+		int op_interval_msec = 200;
 
 		// String dir_path = args[3] ;
 		String dir_path = "/home/andrea-muti/Scrivania/metrics_java_ResponseTimeReader";
 		
+		int sampleCount = 999999999;
 		
 		// String operation = args[4] ; // check valori : "Read" , "Write" 
 		String operation = "Read";
@@ -64,9 +66,8 @@ public class ResponseTimeReader {
 		
 		// ogni quando aggiorno il file con i risultati
 		// int update_interval_msec = args[2] <-- parse int, check se è davvero un int
-		int update_interval_msec = 1000;
+		int update_interval_msec = 2000;
 		
-    	String jmx_port = "7199";		   // stiamo assumento che la jmx port impostata nei nodi sia la 7199
     	
     	String keyspace = "my_keyspace";   // stiamo assumento che il keyspace verso il quale generare le operazioni
     									   // sia già stato creato e che si chiami my_keyspace
@@ -107,151 +108,151 @@ public class ResponseTimeReader {
         Cluster cluster;
         Session session = null;
  
-        while(true){
+        
         	
-        	// AD OGNI ITERAZIONE DEL WHILE APRIAMO UNA NUOVA SESSIONE CON CASSANDRA PER FARE 
-        	// IN MODO CHE LE METRICS COLLEZIONATE SI AZZERINO
+    	cluster = Cluster.builder()
+         		.addContactPoint(contact_point_addr)
+         		.withLoadBalancingPolicy(new RoundRobinPolicy())
+         		.build();
+               	
+        try{
+        	session = cluster.connect();
+        }
+        
+        catch (NoHostAvailableException e){
+        	System.err.println(" - ERROR : no one of the given contact-point nodes is reachable");
+        	try {
+				resultBufferedWriter.close();
+				resultFileWriter.close();
+			} catch (IOException e1) {
+				System.out.println("Error closing result file");
+			}	        	
+        	System.exit(-1);
+        }
+        catch (Exception e){
+        	System.err.println(" - ERROR : there are problems when establishing connection with the cluster - "+e.getMessage());
+        	try {
+				resultBufferedWriter.close();
+				resultFileWriter.close();
+			} catch (IOException e1) {
+				System.out.println("Error closing result file");
+			}	        	
+        	System.exit(-1);
+        }
+        
+        
+        // --------------- SELECTING THE KEYSPACE my_keyspace ------------- //
+        // NB : assumiamo che il keyspace già esista, altrimeti errore
+        
+        try{
+        	session.execute("USE "+keyspace);
+        }
+        catch(NoHostAvailableException e){
+        	System.err.println(" - ERROR : all nodes in the cluster are down or unreachable");
+        	try {
+				resultBufferedWriter.close();
+				resultFileWriter.close();
+			} catch (IOException e1) {
+				System.out.println("Error closing result file");
+			}	        	
+        	System.exit(-1);
+        }
+        catch(Exception e){
+        	System.err.println(" - ERROR : "+e.getMessage());
+        	try {
+				resultBufferedWriter.close();
+				resultFileWriter.close();
+			} catch (IOException e1) {
+				System.out.println("Error closing result file");
+			}	        	
+        	System.exit(-1);
+        }
+        
+        // definition of the moving average window to track latencies
+        MovingAverageWindow ma = new MovingAverageWindow(window_size);
+        
+        // -------- START EXECUTION OF THE OPERATION ----- //
+       
+        //start counting update_interval_msec sec
+		long now = System.currentTimeMillis();			
+	    
+		String DELIMITER  = ";";
+        long start = 0, duration;
+        for(int i = 0; i<sampleCount; i++){
         	
-        	cluster = Cluster.builder()
-             		.addContactPoint(contact_point_addr)
-             		.withLoadBalancingPolicy(new RoundRobinPolicy())
-             		.build();
-                   	
-	        try{
-	        	session = cluster.connect();
-	        }
-	        
-	        catch (NoHostAvailableException e){
-	        	System.err.println(" - ERROR : no one of the given contact-point nodes is reachable");
-	        	try {
-					resultBufferedWriter.close();
-					resultFileWriter.close();
-				} catch (IOException e1) {
-					System.out.println("Error closing result file");
-				}	        	
-	        	System.exit(-1);
-	        }
-	        catch (Exception e){
-	        	System.err.println(" - ERROR : there are problems when establishing connection with the cluster - "+e.getMessage());
-	        	try {
-					resultBufferedWriter.close();
-					resultFileWriter.close();
-				} catch (IOException e1) {
-					System.out.println("Error closing result file");
-				}	        	
-	        	System.exit(-1);
-	        }
-	        
-	        
-	        // --------------- SELECTING THE KEYSPACE my_keyspace ------------- //
-	        // NB : assumiamo che il keyspace già esista, altrimeti errore
-	        
-	        try{
-	        	session.execute("USE "+keyspace);
-	        }
-	        catch(NoHostAvailableException e){
-	        	System.err.println(" - ERROR : all nodes in the cluster are down or unreachable");
-	        	try {
-					resultBufferedWriter.close();
-					resultFileWriter.close();
-				} catch (IOException e1) {
-					System.out.println("Error closing result file");
-				}	        	
-	        	System.exit(-1);
-	        }
-	        catch(Exception e){
-	        	System.err.println(" - ERROR : "+e.getMessage());
-	        	try {
-					resultBufferedWriter.close();
-					resultFileWriter.close();
-				} catch (IOException e1) {
-					System.out.println("Error closing result file");
-				}	        	
-	        	System.exit(-1);
-	        }
-	        
-	        // -------- START EXECUTION OF THE OPERATION ----- //
-	       
-	        //start counting update_interval_msec sec
-			long now = System.currentTimeMillis();			
-		    
-			String DELIMITER  = ";";
-	        
-	        for(int i = 0; i<samplesCount; i++){
+        	UUID random_key = UUIDs.random();
+               	
+        	Statement operation_statement = create_statement_operation(operation,consistency_level,keyspace, table, random_key);
 	        	
-	        	UUID random_key = UUIDs.random();
-	               	
-	        	Statement operation_statement = create_statement_operation(operation,consistency_level,keyspace, table, random_key);
-		        		
-	        	try{ 
-	        		session.execute(operation_statement);
-	        		success++;
-	        	}  
-	        	catch(Exception e){
-	        		System.out.println("error on key: "+random_key+" | "+e.getMessage());
-	        		failed++;
-	        	}
-	        	       	
-	        	//  ogni 'update_interval_msec' aggiorno il file
-	        	if( System.currentTimeMillis() - now >= update_interval_msec ){
-	        		
-					// prende tempo; operazioni fatte; latenza
-	        		
-	        		Metrics metrics = session.getCluster().getMetrics();
-	        		
-					Timer requests_timer = metrics.getRequestsTimer();
-									
-					Snapshot snap = requests_timer.getSnapshot();
-									
-			      	double mean_latency = snap.getMean()/1000;
-			      	//double p90 = snap.getValue(0.90)/1000;
-		      	    double p95 = snap.get95thPercentile()/1000;
-		      	    //double p97 = snap.getValue(0.97)/1000;
-		      	    //double p99 = snap.get99thPercentile()/1000;
-		      	    				
-					try {
-						resultBufferedWriter.write( MyHour.getCurrentMoment()+DELIMITER+
-												    mean_latency+DELIMITER+ 
-												    //p90+DELIMITER+
-												    p95+DELIMITER+
-												    //p97+DELIMITER+
-												    //p99+DELIMITER+
-												    (i+1)+DELIMITER+ 						// num operations executed
-												    success+DELIMITER+						// num successful operations
-												    failed+DELIMITER+"\n");				  	// num failed operations
-					} catch (IOException e) {
-						System.err.println("error with file writer");
-						e.printStackTrace();
-					}
-					
-					now = System.currentTimeMillis();
-					
-					try {	
-						resultBufferedWriter.flush();
-					} catch (IOException e) {
-						System.err.println("error with file writer");
-						e.printStackTrace();
-					}
-					
-			      	   
+        	
+        	try{ 
+        		start = System.nanoTime();
+        		session.execute(operation_statement);
+        		//session.execute("select now() from system.local;");
+        		success++;
+        	}  
+        	catch(Exception e){
+        		System.out.println("error on key: "+random_key+" | "+e.getMessage());
+        		failed++;
+        	}
+        	duration = TimeUnit.MILLISECONDS.convert((System.nanoTime()-start), TimeUnit.NANOSECONDS);
+
+        	ma.newNum(Double.parseDouble(""+duration));
+        	       	
+        	//  ogni 'update_interval_msec' aggiorno il file
+        	if( System.currentTimeMillis() - now >= update_interval_msec ){
+        		
+				// prende tempo; operazioni fatte; latenza
+        		
+								
+		      	double mean_latency = ma.getAvg();
+		      
+	      	    double p95 = ma.get95percentile();
+	      	 
+	      	    System.out.println("mean "+mean_latency+" - 95percent "+p95);
+	      	    				
+				try {
+					resultBufferedWriter.write( MyHour.getCurrentMoment()+DELIMITER+
+											    mean_latency+DELIMITER+ 
+											    //p90+DELIMITER+
+											    p95+DELIMITER+
+											    //p97+DELIMITER+
+											    //p99+DELIMITER+
+											    (i+1)+DELIMITER+ 						// num operations executed
+											    success+DELIMITER+						// num successful operations
+											    failed+DELIMITER+"\n");				  	// num failed operations
+				} catch (IOException e) {
+					System.err.println("error with file writer");
+					e.printStackTrace();
 				}
-	        	
-	        	// sleep  --> facciamo una operazione ogni op_interval_msec mms
-	        	try { Thread.sleep(op_interval_msec); } 
-	        	catch (InterruptedException e) { }
 				
-	        	
-	        } // end for loop with operations
-	        
-	        
-	        // closing current session with the cluster in order to reset the metrics
-	  		try{
-	  			session.close();
-	  		}catch(Exception e){System.err.println("Error closing the session");}
-	  		
-	  		cluster.close();
+				now = System.currentTimeMillis();
+				
+				try {	
+					resultBufferedWriter.flush();
+				} catch (IOException e) {
+					System.err.println("error with file writer");
+					e.printStackTrace();
+				}
+				
+		      	   
+			}
+        	
+        	// sleep  --> facciamo una operazione ogni op_interval_msec mms
+        	try { Thread.sleep(op_interval_msec); } 
+        	catch (InterruptedException e) { }
+			
+        	
+        } // end for loop with operations
+        
+        
+        // closing current session with the cluster in order to reset the metrics
+  		try{
+  			session.close();
+  		}catch(Exception e){System.err.println("Error closing the session");}
+  		
+  		cluster.close();
 	  		        
-        } // end while
         
         /**
          * qui andrebbero chiusi i file/buffer writers ma se rimande while(true) mi dice
@@ -264,6 +265,7 @@ public class ResponseTimeReader {
     
     private static Statement create_statement_operation(String operation, ConsistencyLevel consistency_level, String keyspace, String table, UUID random_key) {
     	Statement op_statement = null;
+    	
     	
     	if( operation.equalsIgnoreCase("READ") ){
     		op_statement = QueryBuilder.select("key","a","b","c","d","e","f","g","h","i","j")
@@ -283,6 +285,7 @@ public class ResponseTimeReader {
     		
     	}
     	// else {}  // se voglio gestire anche altre operazioni+
+    	
     	return op_statement;
     	
 	}

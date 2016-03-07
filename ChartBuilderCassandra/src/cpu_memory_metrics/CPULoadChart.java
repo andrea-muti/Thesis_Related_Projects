@@ -49,7 +49,7 @@ public class CPULoadChart extends Application {
         add_line_to_chart(lineChart, file_paths.get(0), "vm0");
         add_line_to_chart(lineChart, file_paths.get(1), "vm1");
         add_line_to_chart(lineChart, file_paths.get(2), "vm2");
-        //add_line_to_chart(lineChart, file_paths.get(3), "vm3");
+        add_line_to_chart(lineChart, file_paths.get(3), "vm3");
         //add_line_to_chart(lineChart, file_paths.get(4), "vm4");
         //add_line_to_chart(lineChart, file_paths.get(5), "vm5");
 

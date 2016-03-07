@@ -61,7 +61,6 @@ public class ResTimeChart extends Application {
 		yAxis.setTickUnit(2);
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
-       
         lineChart.setTitle("Response Time");
         lineChart.setCreateSymbols(false);  
         
@@ -122,9 +121,9 @@ public class ResTimeChart extends Application {
 		        
 		        double time = (double) (time_value-start_time_value);
 				
-				double value = Double.parseDouble(mean_latency_value_string )/1000;  // <-- millisec 
+				double value = Double.parseDouble(mean_latency_value_string );  // <-- millisec 
 				//double value90 = Double.parseDouble(p90_latency_value_string )/1000; // <-- millisec 
-				double value95 = Double.parseDouble(p95_latency_value_string )/1000; // <-- millisec 
+				double value95 = Double.parseDouble(p95_latency_value_string ); // <-- millisec 
 				//double value99 = Double.parseDouble(p99_latency_value_string )/1000; // <-- millisec 
 				//double value97 = Double.parseDouble(p97_latency_value_string )/1000;
 				
@@ -138,6 +137,7 @@ public class ResTimeChart extends Application {
 				
 			} // token 5
 			reader.close();
+	
 			lineChart.getData().add(series_mean);
 			//lineChart.getData().add(series_p90);
 			lineChart.getData().add(series_p95);
