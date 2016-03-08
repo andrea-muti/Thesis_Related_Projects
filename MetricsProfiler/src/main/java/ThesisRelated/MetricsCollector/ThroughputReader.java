@@ -1,4 +1,4 @@
-package ThesisRelated.MetricsProfiler;
+package ThesisRelated.MetricsCollector;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;

@@ -1,6 +1,4 @@
-package ThesisRelated.MetricsProfiler;
-
-import java.io.IOException;
+package ThesisRelated.MetricsCollector;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;

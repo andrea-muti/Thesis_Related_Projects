@@ -1,4 +1,4 @@
-package ThesisRelated.MetricsProfiler;
+package ThesisRelated.MetricsCollector;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;

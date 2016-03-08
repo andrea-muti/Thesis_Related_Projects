@@ -1,4 +1,4 @@
-package ThesisRelated.MetricsProfiler;
+package ThesisRelated.MetricsCollector;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,13 +27,13 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 /**
- * MetricsProfiler
+ * MetricsCollector
  * 		goal : collect data to be used in the training phase of the ANN
  *
  * @author andrea-muti
  */
 
-public class MetricsProfiler {
+public class MetricsCollector {
 	
     @SuppressWarnings("unused")
 	public static void main( String[] args ){
@@ -43,7 +43,7 @@ public class MetricsProfiler {
     	root.setLevel(Level.ERROR);
 				
     	System.out.println("\n -------------------------------");
-        System.out.println(" --      MetricsProfiler      --");
+        System.out.println(" --      MetricsCollector      --");
         System.out.println(" -------------------------------\n");
         
         int input_rate;				// preso come parametro
@@ -57,12 +57,12 @@ public class MetricsProfiler {
         
         // TO DO : LEGGERE DA ARGS
         String contact_point_address = "192.168.0.169";
-        //String contact_point_address = "127.0.0.1";
+        //String contact_point_address = "127.0.0.1";		 // for local tests
         check_contact_point_address(contact_point_address);
         
         // TO DO : LEGGERE DA ARGS , check isValidPortNumber
         String jmx_port = "7199";
-        //String jmx_port = "7201";
+        //String jmx_port = "7201";		// for local tests
         
         // TO DO: LEGGERE DA ARGS e check
         int cpu_num_samples = 5;
@@ -105,7 +105,7 @@ public class MetricsProfiler {
         /**    LETTURA AVERAGE CPU LEVEL OF NODES   **/
         cpu_level = getAverageCpuLevel(jmx_port, addresses, cpu_num_samples, cpu_sampling_interval_msec);
         
-        System.out.println(" - Average CPU Level : "+cpu_level+" %");
+        System.out.println(" - Average CPU Level : "+cpu_level+" %"); 
 
         
         //------------------------------------------------------------------------------
@@ -145,8 +145,7 @@ public class MetricsProfiler {
    		           + "           [ "+e.getMessage()+" ]");
 			System.exit(-1);
 		}
-		catch (SecurityException e) {
-			System.err.println(" - ERROR : There are security problems when establishing the connection with the Cluster \n"
+		catch (SecurityException e) {			System.err.println(" - ERROR : There are security problems when establishing the connection with the Cluster \n"
 	   		           + "           [ "+e.getMessage()+" ]");
 			System.exit(-1);
 		}
