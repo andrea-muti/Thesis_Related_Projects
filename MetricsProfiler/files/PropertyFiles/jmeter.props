@@ -1,9 +1,9 @@
 #updated 
-#Tue Mar 08 16:54:08 CET 2016
+#Tue Mar 08 19:16:45 CET 2016
 jMeterPath=/home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/jmeter
 java_rmi_server_hostname=192.168.1.6
 jmxFile=/home/andrea-muti/cassandra_jmeter_plans/no_timestamp_timer/cassandra_constant_rate_read_only.jmx
 testDuration=10
-rate=2000
+rate=30000
 noGui=true
 jmeter_slaves_IPs=192.168.2.119,192.168.2.119\:1100,192.168.1.113,192.168.1.116,192.168.0.133

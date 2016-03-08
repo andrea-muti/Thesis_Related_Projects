@@ -5,10 +5,15 @@ import java.io.File;
 public class JMRunner {
 	
 	private JMeterController jMeter;
+	File properties_file;
 	
 	public JMRunner(String properties_file){
-		File prop_file = new File(properties_file);
-		this.jMeter = new JMeterController(prop_file);
+		this.properties_file = new File(properties_file);
+		this.jMeter = new JMeterController(this.properties_file);
+	}
+	
+	public File getPropertiesFile(){
+		return this.properties_file;
 	}
 	
 	public void runTest(){
