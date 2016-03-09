@@ -6,18 +6,31 @@ public class JMRunner {
 	
 	private JMeterController jMeter;
 	File properties_file;
+	private boolean isRunning;
 	
 	public JMRunner(String properties_file){
 		this.properties_file = new File(properties_file);
 		this.jMeter = new JMeterController(this.properties_file);
+		this.isRunning=false;
 	}
 	
 	public File getPropertiesFile(){
 		return this.properties_file;
 	}
 	
+	public boolean isRunning() {
+		return isRunning;
+	}
+	
 	public void runTest(){
+		this.isRunning = true;
 		this.jMeter.runJMeter();
+		while( this.jMeter.isRunning() ){ 
+			try {
+				Thread.sleep(1000); // aspetto
+			} catch (InterruptedException e) {} 
+		}
+		this.isRunning=false;
 	}
 	
 	public static void main(String[] args){
@@ -57,5 +70,5 @@ public class JMRunner {
 		System.exit(0);
 		
 	}
-	
+
 }

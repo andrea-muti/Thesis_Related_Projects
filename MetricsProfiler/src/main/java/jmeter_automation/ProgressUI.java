@@ -29,7 +29,7 @@ public class ProgressUI extends JPanel  implements ActionListener, ProgressContr
 	private WindowListener listener = new WindowAdapter() {
 		@Override 
 		public void windowClosing(WindowEvent e) {
-			System.out.println("jooo9.2");
+			System.out.println("closed window");
 			if (process != null)			{
 				process.destroy();
 				process = null;

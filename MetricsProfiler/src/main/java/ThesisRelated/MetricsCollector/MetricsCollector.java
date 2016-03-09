@@ -140,12 +140,12 @@ public class MetricsCollector {
         /**    STAMPA DELLE METRICS COLLEZIONATE  **/
         // invece di stamparle su stdout dovrei stamparle su file
         
-        System.out.println("\n - Input Rate : "+input_rate +" req/sec");
-        System.out.println(" - There are "+num_nodes+" nodes in the cluster");       
-        System.out.println(" - Average CPU Level : "+cpu_level+" %"); 
-        System.out.println(" - Average Total Throughput : "+throughput_total+" ops/sec");  
-        System.out.println(" - Mean Response Time : "+rt_mean+" msec");
-        System.out.println(" - 95percentile Response Time : "+rt_95p+" msec");
+        System.out.println(" \t\t - Input Rate : "+input_rate +" req/sec");
+        System.out.println(" \t\t - There are "+num_nodes+" nodes in the cluster");       
+        System.out.println(" \t\t - Average CPU Level : "+cpu_level+" %"); 
+        System.out.println(" \t\t - Average Total Throughput : "+throughput_total+" ops/sec");  
+        System.out.println(" \t\t - Mean Response Time : "+rt_mean+" msec");
+        System.out.println(" \t\t - 95percentile Response Time : "+rt_95p+" msec");
 	}
 	
 
@@ -205,7 +205,7 @@ public class MetricsCollector {
     private static double getAverageCpuLevel( String jmx_port_number, List<String> addresses, 
     										  int num_samples, int sampling_interval){
     	
-    	System.out.println("\n - Computing Average CPU Level [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
+    	System.out.println(" \t - Computing Average CPU Level [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
     	double cpu_level_to_return = 0;
     
     	int n_nodes = addresses.size();
@@ -264,7 +264,7 @@ public class MetricsCollector {
     private static double getAverageTotalThroughput( String jmx_port_number, List<String> addresses,
     												 int num_samples, int sampling_interval){
     
-    	System.out.println(" - Computing Average Total Throughput [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
+    	System.out.println(" \t - Computing Average Total Throughput [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
     	double throughtput_to_return = 0;
     
     	int n_nodes = addresses.size();
@@ -306,7 +306,7 @@ public class MetricsCollector {
     
     private static double[] getResponseTimes(String jmx_port_number, String cp_address, int samples_count, String operation,ConsistencyLevel cl ){
     	
-    	System.out.println(" - Computing Response Time [collecting "+samples_count+" samples  ]");
+    	System.out.println(" \t - Computing Response Time [collecting "+samples_count+" samples  ]");
     	
     	double[] res_times = new double[2];
     	

@@ -180,26 +180,33 @@ public class JMXReader {
 	  		double countRD = 0;
 	  		double countWR = 0;
 
-  			long startcountrd = System.currentTimeMillis();
+  			
   			double readCountstart = getReadCount(connection);
-  			long startcountwr = System.currentTimeMillis();
+  			long startcountrd = System.currentTimeMillis();
+  			
+  			
   			double writeCountstart = getWriteCount(connection);
+  			long startcountwr = System.currentTimeMillis();
 		
 			try{Thread.sleep(1000);}
 			catch(Exception e){}
   						
   			double readCountend = getReadCount(connection);
   			long endcountrd = System.currentTimeMillis();
+  			
   			double writeCountend = getWriteCount(connection);
   			long endcountwr = System.currentTimeMillis();
   			 
-  			double elapsed_rd = ((endcountrd - startcountrd)/1000);
-  			double elapsed_wr = ((endcountwr - startcountwr)/1000);
-  			if(elapsed_rd==0){elapsed_rd = 1;}
-  			if(elapsed_wr==0){elapsed_wr = 1;}
+  			double elapsed_rd = ((endcountrd - startcountrd)/1000.0);
+  			double elapsed_wr = ((endcountwr - startcountwr)/1000.0);
+  			if(elapsed_rd==0){elapsed_rd = 1.0;}
+  			if(elapsed_wr==0){elapsed_wr = 1.0;}
   			
-  			countRD = (readCountend - readCountstart) / elapsed_rd;
-  			countWR = (writeCountend - writeCountstart) / elapsed_wr; 
+  			// diciamo che questo epsilon tiene conto del ping time 
+  			double epsilon = 0.008;
+  			
+  			countRD = (readCountend - readCountstart)   / (elapsed_rd - epsilon);
+  			countWR = (writeCountend - writeCountstart) / (elapsed_wr - epsilon); 
 	
   			throughput_total = countRD + countWR;
 
