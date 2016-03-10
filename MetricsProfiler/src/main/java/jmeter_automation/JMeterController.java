@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class JMeterController {
 
-	
+	/**    instance variables    **/
 	Properties jmeterProperties;
 	File jmeterPropertiesFile;
 	private boolean noGui;
@@ -20,21 +20,24 @@ public class JMeterController {
 	private int slaves_number;
 	private int total_request_rate;
 	private int slave_request_rate;
+	private int thread_number_per_slave;
 	private int test_duration_sec;
 	private int ramp_duration_sec;
 	private boolean isRunning;
 	private int timeout_jmeter_slaves;
 	
+	
+	/** public constructor **/
 	public JMeterController(File jmeterProperties) {
 		this(FileUtils.loadProperties(jmeterProperties));
 		this.jmeterPropertiesFile=jmeterProperties;
 	}
 	
-	
-	public JMeterController(Properties jmeterProperties) {
+	/** private constructor **/
+	private JMeterController(Properties jmeterProperties) {
 		super();
 		this.jmeterProperties = jmeterProperties;
-		this.noGui = Boolean.parseBoolean(jmeterProperties.getProperty("noGui"));
+		this.noGui = Boolean.parseBoolean(jmeterProperties.getProperty("noGui","true"));
 		this.jMeterPath = new File(jmeterProperties.getProperty("jMeterPath"));
 		this.jmxFile = new File(jmeterProperties.getProperty("jmxFile"));
 		this.java_rmi_server_hostname = jmeterProperties.getProperty("java_rmi_server_hostname");
@@ -42,11 +45,14 @@ public class JMeterController {
 		this.slaves_number = count_slaves(this.jmeter_slaves_IPs);
 		this.total_request_rate = Integer.parseInt(jmeterProperties.getProperty("rate"));
 		this.slave_request_rate = this.total_request_rate / this.slaves_number;
-		this.test_duration_sec = Integer.parseInt(jmeterProperties.getProperty("testDuration"));
-		this.ramp_duration_sec = Integer.parseInt(jmeterProperties.getProperty("rampDuration"));
-		this.timeout_jmeter_slaves = Integer.parseInt(jmeterProperties.getProperty("timeoutJMeterSlaves"));
+		this.thread_number_per_slave = this.slave_request_rate / 5 ;
+		if(this.thread_number_per_slave == 0){ this.thread_number_per_slave = 1; }
+		this.test_duration_sec = Integer.parseInt(jmeterProperties.getProperty("testDuration","60"));
+		this.ramp_duration_sec = Integer.parseInt(jmeterProperties.getProperty("rampDuration","10"));
+		this.timeout_jmeter_slaves = Integer.parseInt(jmeterProperties.getProperty("timeoutJMeterSlaves","60"));
 		this.isRunning = false;
 	}
+	
 	
 	private int count_slaves(String jmeter_slaves_IPs){
 		StringTokenizer strtok = new StringTokenizer(jmeter_slaves_IPs, ",");
@@ -63,31 +69,29 @@ public class JMeterController {
 		this.total_request_rate = Integer.parseInt(this.jmeterProperties.getProperty("rate"));
 		this.slave_request_rate = this.total_request_rate / this.slaves_number;
 		
-		//System.out.println("    - total request rate : "+this.total_request_rate+" reqs/sec ");
-		//System.out.println("    - jmeter-slaves : "+this.slaves_number);
-		//System.out.println("    - each slave will execute "+this.slave_request_rate+" reqs/sec ");
-		//System.out.println("    - constant request rate duration : "+this.test_duration_sec+" sec");
-		
-		// PROVA MIA GENERAZIONE DI PARAMETRI
-		String params = generateJMeterParameters_my_version(this.noGui, this.jmxFile, this.java_rmi_server_hostname, 
-														    this.jmeter_slaves_IPs, this.slave_request_rate, this.test_duration_sec, this.ramp_duration_sec);
+		// Parameters Generation
+		String params = generateJMeterParameters( this.noGui, this.jmxFile, this.java_rmi_server_hostname, 
+												  this.jmeter_slaves_IPs, this.slave_request_rate, 
+												  this.test_duration_sec, this.ramp_duration_sec, 
+												  this.thread_number_per_slave );
 
 		long test_duration_ms = this.test_duration_sec * 1000;
 		long ramp_up_and_down_durations_ms = 2 * this.ramp_duration_sec * 1000;
 		long total_duration = 20*1000 + test_duration_ms + ramp_up_and_down_durations_ms; // è la durata del test jmeter
 		
-		// run JMeter
+		// invokes the execution of JMeter Master ( that will call the slaves)
 		try {
 			ProgressController progressController = new ProgressUI();
 
 			String exec_command = jMeterPath.toString() + params;
 			
-			System.out.println(" - start execution of JMeter load generation");
+			System.out.println(" - start execution of Load Generation");
 					
 			long start = System.currentTimeMillis();
 			Process process = Runtime.getRuntime().exec(exec_command);
 			progressController.processStarted(process, start + total_duration);
 			
+			// aspetto la fine dell'esecuione dei jmeter-slaves e dunque del master per un tempo 'total_duration'
 			while( (System.currentTimeMillis() - start) <= total_duration ){
 				try {
 					if(process.isAlive()){
@@ -97,38 +101,42 @@ public class JMeterController {
 				} catch (InterruptedException e) {}	
 				progressController.currentProgress( (System.currentTimeMillis() - start) / (double) total_duration );
 			}
-		
+			
+			// se dopo 'total_duration' secondi i jmeter-slaves non hanno ancora terminato
+			// gli permetto di terminare entro altri 'timeout_jmeter_slaves' secondi, 
+			// altrimenti li assumo come bloccati, li uccido e li faccio ripartire
 		    try {
 		    	// aspetto indefinitamente che i jmeter-slaves terminino --> a volte si blocca!
 		    	//process.waitFor();
 		    	
-		    	
-		    	// aspetto al max timeout_jmeter_slaves secondi che i jmeter-slaves terminino
-		    	// se non sono terminati entro il timeout, eseguo uno script che li uccide e li rilancia
-		    	// in tal modo posso proseguire con l'esecuzione del profiling
+		    	// allo scadere del tempo 'total_duration' che ho preventivato per il completamento dell'esecuzione
+		    	// del load generation da parte dei jmeter-slaves, se questi non hanno ancora terminato
+		    	// aspetto al max altri 'timeout_jmeter_slaves' secondi. Se i jmeter-slaves non sono ancora
+		    	// terminati entro il timeout assumo che si siano bloccati, ed eseguo quindi uno script che li 
+		    	// uccide e li rilancia, in modo tale da poter proseguire l'esecuzione del profiling
 		    	boolean terminated_correctly = process.waitFor(this.timeout_jmeter_slaves,TimeUnit.SECONDS);
-		    	if(!terminated_correctly){
+		    	if( !terminated_correctly ){
 		    		System.out.println(" - timeout expired : killing and restarting all jmeter-slaves");
 		    		// eseguire lo script che uccide i JMeter-server bloccati e li rilancia
 		    		Process killer = Runtime.getRuntime().exec("sh files/scripts/jmeter_slaves_restarter.sh");
-		    		System.out.println(" - waiting for script that kills and restarts slaves");
+		    		System.out.println(" - waiting for completion of the script that kills and restarts the jmeter-slaves");
 		    		killer.waitFor();
-		    		System.out.println(" - JMeter-slaves restarted ");
+		    		System.out.println(" - all JMeter-slaves are restarted ");
 		    	}
 		    	
 		    } 
-		    catch (InterruptedException e) {
-		      System.err.println(e);  // "Can'tHappen"
+		    catch( InterruptedException e ){
+		      System.err.println(" - ERROR : " +e);  // "Can'tHappen"
 		      return;
 		    }
-		    progressController.finished();
-		    
+		    progressController.finished();		    
 		    process.destroy();
 		  	   
-		    System.out.println(" - end execution of JMeter load generation [ exit status : " + process.exitValue()+" ]");	   
+		    System.out.println(" - end execution of Load Generation ");	   
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+		}
+		catch( IOException e ){
+			System.err.println(" - ERROR : "+e);
 		}
 		
 		this.isRunning = false;
@@ -136,21 +144,24 @@ public class JMeterController {
 		//System.out.println("  ---------------------------------\n");
 	}
 	
-	public boolean isRunning(){return this.isRunning;}
+	public boolean isRunning(){ return this.isRunning; }
 	
-	private static String generateJMeterParameters_my_version(boolean noGui, File jmxFile, String rmi_server_hostname, String jmeter_slaves_IPs, int req_rate, int duration, int duration_ramp) {
+	private static String generateJMeterParameters(boolean noGui, File jmxFile, String rmi_server_hostname, 
+												   String jmeter_slaves_IPs, int req_rate, int duration, 
+												   int duration_ramp, int thread_number ) {
 		
 		jmxFile = FileUtils.getAbsolutePath(jmxFile);
 		
 		String params = "";
-		if (noGui) { params += " -n"; }
+		if( noGui ){ params += " -n"; }
 		
-		params += " -t " + jmxFile.toString()
-					  + " -Grate="+req_rate
-					  + " -Gduration_constant="+duration
-					  + " -Gduration_ramp="+duration_ramp
-				      + " -R "+jmeter_slaves_IPs
-				      + " -Djava.rmi.server.hostname="+rmi_server_hostname;
+		params  += " -t " + jmxFile.toString()
+			    +  " -Grate="+req_rate
+		   	    +  " -Gduration_constant="+duration
+			    +  " -Gduration_ramp="+duration_ramp
+			    +  " -Gthread_number="+thread_number
+				+  " -R "+jmeter_slaves_IPs
+				+  " -Djava.rmi.server.hostname="+rmi_server_hostname;
 		
 		return params;
 	}

@@ -1,6 +1,8 @@
 package ThesisRelated.MetricsCollector;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,7 +53,7 @@ public class MetricsCollector {
 	private String operation_RT;
 	@SuppressWarnings("unused")
 	private int rt_op_interval_msec;
-	
+	private String output_file_path;
 	
 	public MetricsCollector(String properties_file){
 		
@@ -65,34 +67,36 @@ public class MetricsCollector {
         this.contact_point_address = this.properties.getProperty("contact_point_address");
         check_contact_point_address(contact_point_address);
         
-        // TO DO : check isValidPortNumber
+        // TODO : check isValidPortNumber
         this.jmx_port = this.properties.getProperty("jmx_port");
         
-        // TO DO: check is number
+        // TODO: check is number
         this.cpu_num_samples = Integer.parseInt(this.properties.getProperty("cpu_num_samples"));
         
-        // TO DO : check is number
+        // TODO : check is number
         this.cpu_sampling_interval_msec = Integer.parseInt(this.properties.getProperty("cpu_sampling_interval_msec"));
         
-        // TO DO: check is number
+        // TODO: check is number
         this.throughput_num_samples = Integer.parseInt(this.properties.getProperty("throughput_num_samples"));
         
-        // TO DO : check is number
+        // TODO : check is number
         this.throughput_sampling_interval_msec = Integer.parseInt(this.properties.getProperty("throughput_sampling_interval_msec"));
           
-        // TO DO : check is number
+        // TODO : check is number
         this.samples_count_RT = Integer.parseInt(this.properties.getProperty("samples_count_RT"));
         
-        // TO DO : check is number
+        // TODO : check is number
         this.rt_op_interval_msec = Integer.parseInt(this.properties.getProperty("rt_op_interval_msec"));
         
         this.consistency_level = this.properties.getProperty("consistency_level");
         this.cl = consistency_parser(consistency_level);
         
-        // TO DO : check is number
+        // TODO : check is number
     	this.operation_RT = this.properties.getProperty("operation_RT");
-		
-		
+    	
+    	// TODO: check is a valid path
+    	this.output_file_path = this.properties.getProperty("output_file_path");
+			
 	}
 	
 	public void runCollector(int in_rate){
@@ -110,8 +114,7 @@ public class MetricsCollector {
         
         /**   LETTURA ADDRESSES and NUMBER OF NODES IN THE CLUSTER   **/
         
-        addresses = getNodesAddresses(contact_point_address, jmx_port);
-        
+        addresses = getNodesAddresses(contact_point_address, jmx_port);     
         num_nodes = addresses.size();
        
         //------------------------------------------------------------------------------
@@ -127,28 +130,71 @@ public class MetricsCollector {
         //------------------------------------------------------------------------------
         
         /**    LETTURA RESPONSE TIME    **/
-
-        double[] response_times = getResponseTimes(jmx_port, contact_point_address, samples_count_RT, 
-        		operation_RT, cl);
-        
+        double[] response_times = getResponseTimes(jmx_port, contact_point_address, samples_count_RT, operation_RT, cl);       
         rt_mean = response_times[0];
         rt_95p = response_times[1];
         
         
         //------------------------------------------------------------------------------
         
-        /**    STAMPA DELLE METRICS COLLEZIONATE  **/
-        // invece di stamparle su stdout dovrei stamparle su file
+        /**    REPORT DELLE METRICS COLLEZIONATE  **/
         
-        System.out.println(" \t\t - Input Rate : "+input_rate +" req/sec");
-        System.out.println(" \t\t - There are "+num_nodes+" nodes in the cluster");       
-        System.out.println(" \t\t - Average CPU Level : "+cpu_level+" %"); 
-        System.out.println(" \t\t - Average Total Throughput : "+throughput_total+" ops/sec");  
-        System.out.println(" \t\t - Mean Response Time : "+rt_mean+" msec");
-        System.out.println(" \t\t - 95percentile Response Time : "+rt_95p+" msec");
+        boolean debug = false;
+        
+        if( debug ){ // se siamo in debug mode stampiamo le metriche su standard out	
+	        System.out.println(" \t\t - Input Rate : "+input_rate +" req/sec");
+	        System.out.println(" \t\t - There are "+num_nodes+" nodes in the cluster");       
+	        System.out.println(" \t\t - Average CPU Level : "+cpu_level+" %"); 
+	        System.out.println(" \t\t - Average Total Throughput : "+throughput_total+" ops/sec");  
+	        System.out.println(" \t\t - Mean Response Time : "+rt_mean+" msec");
+	        System.out.println(" \t\t - 95percentile Response Time : "+rt_95p+" msec");
+        }
+        else{ // le metriche vanno salvate su file
+        	boolean success;
+        	do{ success = save_results_on_file(num_nodes, input_rate, cpu_level, throughput_total, rt_mean, rt_95p); }
+        	while(!success);
+        	System.out.println(" - metrics saved on file");
+        }
 	}
 	
+    //---------------------------------------------------------------------------------------------
+	
+	private boolean save_results_on_file( int num_nodes, int input_rate, double cpu_level, double throughput_total,
+										  double rt_mean, double rt_95p){
+		String delimiter = ";";
+		boolean success = true;
+		String data_to_write = ""+num_nodes + delimiter + input_rate + delimiter + cpu_level + delimiter + 
+								  throughput_total + delimiter + rt_mean + delimiter + rt_95p + delimiter;
+		
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+		boolean append = true;
+		 
+	    try {
+	    	fw = new FileWriter( this.output_file_path, append );
+	        bw = new BufferedWriter(fw);
+	        bw.write(data_to_write);
+	        bw.newLine();
+	        bw.flush();
+	    } 
+	    catch( IOException ioe ){ 
+	    	System.out.println(ioe.getMessage()); 
+	    	success=false; 
+	    } 
+	    finally{                      
+		    if( bw != null ){
+			    try { bw.close(); } 
+			    catch( IOException ioe2 ){ 
+			    	System.out.println(ioe2.getMessage()); 
+			    	success=false;
+			    }
+		    }	     
+	    }
+	
+	    return success;
+	}
 
+	/** Main di prova **/
 	public static void main( String[] args ){
     	
 		System.out.println("\n ************** Metrics Collector ***************");
@@ -158,7 +204,7 @@ public class MetricsCollector {
 		String properties_file = "files/PropertyFiles/collector.properties";
 		MetricsCollector collector = new MetricsCollector(properties_file);
 		
-		collector.runCollector(1000);
+		collector.runCollector(10000);
     	
 		System.out.println("\n - ELAPSED TIME : "+(System.currentTimeMillis()-start)/1000+" seconds");
 		
@@ -205,7 +251,7 @@ public class MetricsCollector {
     private static double getAverageCpuLevel( String jmx_port_number, List<String> addresses, 
     										  int num_samples, int sampling_interval){
     	
-    	System.out.println(" \t - Computing Average CPU Level [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
+    	System.out.println(" \t - Computing Average CPU Level ");
     	double cpu_level_to_return = 0;
     
     	int n_nodes = addresses.size();
@@ -230,12 +276,11 @@ public class MetricsCollector {
      		IP_address="127.0.0.1";
 			*/
   		
-            task_List.add(i, service.submit(new CPUReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));
-     		
+            task_List.add(i, service.submit(new CPUReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));	
      	
      	}// end of for loop
      	
-         service.shutdownNow();
+        service.shutdownNow();
          
      	int i = 0;
      	// getting the results of the collector threads
@@ -264,7 +309,7 @@ public class MetricsCollector {
     private static double getAverageTotalThroughput( String jmx_port_number, List<String> addresses,
     												 int num_samples, int sampling_interval){
     
-    	System.out.println(" \t - Computing Average Total Throughput [collecting "+num_samples+" samples @ sampling interval of "+sampling_interval+" msec ]");
+    	System.out.println(" \t - Computing Average Total Throughput");
     	double throughtput_to_return = 0;
     
     	int n_nodes = addresses.size();
@@ -276,16 +321,13 @@ public class MetricsCollector {
         
      	// per ogni nodo nel cluster, colleziona le statistics
      	for( int i=0; i<n_nodes; i++ ){
-     		
      		String IP_address = addresses.get(i);
-            task_List.add(i, service.submit(new ThroughputReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));	
-     	
+            task_List.add(i, service.submit(new ThroughputReader(IP_address,""+jmx_port_number, num_samples, sampling_interval)));		
      	}// end of for loop
      	
          service.shutdownNow();
      
      	// getting the results of the collector threads
-
      	for(Future<Double> f : task_List){
      		try {
      			Double returned_throughput = f.get();   		
@@ -304,9 +346,10 @@ public class MetricsCollector {
     
     //---------------------------------------------------------------------------------------------
     
-    private static double[] getResponseTimes(String jmx_port_number, String cp_address, int samples_count, String operation,ConsistencyLevel cl ){
+    private static double[] getResponseTimes( String jmx_port_number, String cp_address, int samples_count, 
+    										  String operation,ConsistencyLevel cl ){
     	
-    	System.out.println(" \t - Computing Response Time [collecting "+samples_count+" samples  ]");
+    	System.out.println(" \t - Computing Response Time");
     	
     	double[] res_times = new double[2];
     	
@@ -343,10 +386,9 @@ public class MetricsCollector {
        // -------- START EXECUTION OF THE OPERATION ----- //
         
         long start = 0, duration;
-        for(int i = 0; i<samples_count; i++){
+        for( int i = 0; i<samples_count; i++ ){
         	
-        	UUID random_key = UUIDs.random();
-               	
+        	UUID random_key = UUIDs.random();             	
         	Statement operation_statement = create_statement_operation(operation,cl,keyspace, table, random_key);
         	
         	try{ 
@@ -365,7 +407,8 @@ public class MetricsCollector {
         // closing current session with the cluster in order to reset the metrics
   		try{
   			session.close();
-  		}catch(Exception e){System.err.println("Error during closing the session");}
+  		}
+  		catch(Exception e){ System.err.println("Error during closing the session"); }
   		
   		cluster.close();
 						
@@ -405,7 +448,6 @@ public class MetricsCollector {
 	}
 	
 	//---------------------------------------------------------------------------------------------
-	
 
     private static Statement create_statement_operation(String operation, ConsistencyLevel consistency_level, String keyspace, String table, UUID random_key) {
     	Statement op_statement = null;
@@ -433,9 +475,8 @@ public class MetricsCollector {
     	return op_statement;
     	
 	}
-    
-    
-  //---------------------------------------------------------------------------------------------
+       
+    //---------------------------------------------------------------------------------------------
 
   	private static ConsistencyLevel consistency_parser(String cl) {
       	ConsistencyLevel result = null;
