@@ -38,20 +38,21 @@ public class CPUByIR extends Application {
     
         stage.setTitle("Average CPU VS Input Rate");
 
-        final NumberAxis xAxis = new NumberAxis();
+        final NumberAxis xAxis = new NumberAxis(0000,210000,10000);
         final NumberAxis yAxis = new NumberAxis();
 
         xAxis.setLabel("Input Rate [ requests/second ]");
-        xAxis.setTickUnit(10);
+        //xAxis.setTickUnit(10);
 		yAxis.setLabel("Average CPU [ % ]");
 		yAxis.setTickUnit(2);
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Throughput VS Input Rate");
+        lineChart.setTitle("CPU Utilization VS Input Rate");
         lineChart.setCreateSymbols(false);  
             
-        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes");
+        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
+        add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
   
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -59,12 +60,14 @@ public class CPUByIR extends Application {
         stage.show();
     }
     
-	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name) {    	
+	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, int num) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 	    series.setName(name);
 
 	    Map<Integer, LinkedList<Double>> cpus_by_IR = new Hashtable<Integer,LinkedList<Double>>();
 	    
+	    double max_avg = 0;
+	    int i = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
 			System.out.println(" * parsing input file");
@@ -74,10 +77,13 @@ public class CPUByIR extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line,";");
-				st.nextToken(); // nodi , non mi serve
-				int IR = Integer.parseInt(st.nextToken());
-				double CPU = Double.parseDouble(st.nextToken());
-				HashMapUtils.insert(cpus_by_IR, IR, CPU);
+				int n = Integer.parseInt(st.nextToken()); // nodi 
+				if(n==num){
+					int IR = Integer.parseInt(st.nextToken());
+					double CPU = Double.parseDouble(st.nextToken());
+					HashMapUtils.insert(cpus_by_IR, IR, CPU);
+					if(IR>90000){ max_avg = max_avg + CPU; i++;}
+				}
 				line = reader.readLine();
 			}
 			reader.close();
@@ -92,6 +98,9 @@ public class CPUByIR extends Application {
 				double TH = entry.getValue();
 				series.getData().add(new XYChart.Data<Number, Number>(IR, TH));
 			}
+			
+			max_avg = max_avg / i;
+			System.out.println(" * max avg cpu for "+name+" : "+max_avg+" %");
 			
 			lineChart.getData().add(series);
 			System.out.println(" * new line inserted");

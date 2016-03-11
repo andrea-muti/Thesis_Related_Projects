@@ -38,11 +38,11 @@ public class RTmeanByIR extends Application {
     
         stage.setTitle("Response Time [mean] VS Input Rate");
 
-        final NumberAxis xAxis = new NumberAxis();
+        final NumberAxis xAxis = new NumberAxis(0000,210000,10000);
         final NumberAxis yAxis = new NumberAxis();
 
         xAxis.setLabel("Input Rate [ requests/second ]");
-        xAxis.setTickUnit(10);
+        //xAxis.setTickUnit(10);
 		yAxis.setLabel("mean RT  [ msec ]");
 		yAxis.setTickUnit(2);
 
@@ -51,7 +51,8 @@ public class RTmeanByIR extends Application {
         lineChart.setTitle("Mean Response Time VS Input Rate");
         lineChart.setCreateSymbols(false);  
             
-        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes");
+        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
+        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 4);
   
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -59,7 +60,7 @@ public class RTmeanByIR extends Application {
         stage.show();
     }
     
-	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name) {    	
+	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, int num) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 	    series.setName(name);
 
@@ -74,12 +75,14 @@ public class RTmeanByIR extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line,";");
-				st.nextToken(); // nodi , non mi serve
-				int IR = Integer.parseInt(st.nextToken());
-				st.nextToken(); //cpu
-				st.nextToken(); // th
-				double mrt = Double.parseDouble(st.nextToken());
-				HashMapUtils.insert(mrt_by_IR, IR, mrt);
+				int nodi = Integer.parseInt(st.nextToken()); // nodi 
+				if(num == nodi){		
+					int IR = Integer.parseInt(st.nextToken());
+					st.nextToken(); //cpu
+					st.nextToken(); // th
+					double mrt = Double.parseDouble(st.nextToken());
+					HashMapUtils.insert(mrt_by_IR, IR, mrt);
+				}
 				line = reader.readLine();
 			}
 			reader.close();
