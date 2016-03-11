@@ -52,9 +52,7 @@ public class ClusterProfiler {
 							  52000, 54000, 56000, 58000, 60000, 62000, 64000, 66000, 68000, 70000};
 		*/
 		
-		int[] input_rates = {  8000, 10000, 12000, 14000, 16000, 18000, 22000, 24000, 26000,
-				  		28000, 30000, 38000, 40000, 42000, 44000, 46000, 48000, 50000,
-				  		52000, 54000, 56000, 58000, 60000, 62000, 66000, 68000, 70000};
+		int[] input_rates = { 76000, 78000, 80000, 82000, 84000 };
 		int n = 0;
 
 		for(int input_rate : input_rates){
@@ -104,7 +102,7 @@ public class ClusterProfiler {
 						// aspetto che il load generator abbia finito completamente 
 						System.out.println(" -- wait termination of current load_generator run");
 						while(load_generator.isRunning()){	
-							try { Thread.sleep( 1*SECOND ); } 
+							try { Thread.sleep( 2*SECOND ); } 
 							catch (InterruptedException e) {}				
 						}
 					}
@@ -210,7 +208,7 @@ class LoadGeneratorThread implements Runnable{
 		this.load_generator.runTest();
 		
 		while( this.load_generator.isRunning() ){ 
-			try { Thread.sleep(1000); } 
+			try { Thread.sleep(2000); } 
 			catch (InterruptedException e) {}
 		}
 		
