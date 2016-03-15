@@ -3,12 +3,15 @@ package charts;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javafx.application.Application;
@@ -52,7 +55,9 @@ public class RTmeanByIR extends Application {
         lineChart.setCreateSymbols(false);  
             
         add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
-        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "5 nodes", 5);
+        add_line_to_chart(lineChart, file_paths.get(0), "6 nodes", 6);
   
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -88,15 +93,35 @@ public class RTmeanByIR extends Application {
 			reader.close();
 			
 			System.out.println(" * computing averages");
-			Map<Integer, Double> avg_throughput_by_IR = HashMapUtils.compute_averages(mrt_by_IR);
+			Map<Integer, Double> avg_rt_by_IR = HashMapUtils.compute_averages(mrt_by_IR);
 			
-			Iterator<Entry<Integer,Double>> iter2 = avg_throughput_by_IR.entrySet().iterator();
+			Object[] set_keys = avg_rt_by_IR.keySet().toArray();
+			Arrays.sort(set_keys);
+			
+			for(Object elem : set_keys){
+				int ir = (int) elem;
+				double rt = (double) avg_rt_by_IR.get(elem);
+				
+				DecimalFormat df = new  DecimalFormat("000.0000");
+		    	
+		    	String rt_formatted = df.format(rt).replace(",", ".");
+				
+				//System.out.println((int)elem+";"+rt_formatted+";");
+				
+				series.getData().add(new XYChart.Data<Number, Number>(ir, rt));
+				
+			}
+			
+			/*
+			Iterator<Entry<Integer,Double>> iter2 = avg_rt_by_IR.entrySet().iterator();
 			while(iter2.hasNext()){
 				Entry<Integer,Double> entry = iter2.next();
 				double IR = entry.getKey();
-				double TH = entry.getValue();
-				series.getData().add(new XYChart.Data<Number, Number>(IR, TH));
+				double RT = entry.getValue();	
+				
+				series.getData().add(new XYChart.Data<Number, Number>(IR, RT));
 			}
+			*/
 			
 			lineChart.getData().add(series);
 			System.out.println(" * new line inserted");
@@ -104,6 +129,7 @@ public class RTmeanByIR extends Application {
 			System.err.println("Error in opening|writing|closing the file: "+file_path);
 			e.printStackTrace();
 		}	
+		System.out.println("\n");
 	}
 
 

@@ -51,8 +51,22 @@ public class JMeterController {
 		this.ramp_duration_sec = Integer.parseInt(jmeterProperties.getProperty("rampDuration","10"));
 		this.timeout_jmeter_slaves = Integer.parseInt(jmeterProperties.getProperty("timeoutJMeterSlaves","60"));
 		this.isRunning = false;
+		kill_and_restart_jmeter_slaves_by_script();
 	}
 	
+	private void kill_and_restart_jmeter_slaves_by_script(){
+		System.out.print(" - initial killing & restarting of jmeter-slaves: ");
+		try{
+		// allo startup killiamo e facciamo ripartire i jmeter-slaves per sicurezza
+		Process killer = Runtime.getRuntime().exec("sh files/scripts/jmeter_slaves_restarter.sh");
+		killer.waitFor();
+		}
+		catch(Exception e){
+			System.out.println(" FAILED");
+			System.err.println(" - ERROR in the initial killing and restarting of jmeter-slaves");
+		}
+		System.out.println(" DONE");
+	}
 	
 	private int count_slaves(String jmeter_slaves_IPs){
 		StringTokenizer strtok = new StringTokenizer(jmeter_slaves_IPs, ",");

@@ -54,6 +54,10 @@ public class ThroughputByIR extends Application {
             
         add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
         add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "5 nodes", 5);
+        add_line_to_chart(lineChart, file_paths.get(0), "6 nodes", 6);
+        
+        
   
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -103,10 +107,32 @@ public class ThroughputByIR extends Application {
 				IR = entry.getKey();
 				TH = entry.getValue();
 				series.getData().add(new XYChart.Data<Number, Number>(IR, TH));
-				if( IR > 90000 ){
-					avg_max_th += TH;
-					n++;
-				}	
+				if(num==3){
+					if( IR > 90000 ){
+						avg_max_th += TH;
+						n++;
+					}
+				}
+				else if(num==4){
+					if( IR > 102000 ){
+						avg_max_th += TH;
+						n++;
+					}
+				}
+				else if(num==5){
+					if( IR > 116000 ){
+						avg_max_th += TH;
+						n++;
+					}
+				}
+				else if(num==6){
+					if( IR > 128000 ){
+						avg_max_th += TH;
+						n++;
+					}
+				}
+				
+			
 			}
 			
 			if(avg_max_th!=0){

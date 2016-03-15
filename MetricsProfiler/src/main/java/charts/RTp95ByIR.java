@@ -52,7 +52,9 @@ public class RTp95ByIR extends Application {
         lineChart.setCreateSymbols(false);  
             
         add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
-        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "5 nodes", 5);
+        add_line_to_chart(lineChart, file_paths.get(0), "6 nodes", 6);
   
         Scene scene  = new Scene(lineChart,800,600);       
        

@@ -53,6 +53,8 @@ public class CPUByIR extends Application {
             
         add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
         add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
+        add_line_to_chart(lineChart, file_paths.get(0), "5 nodes", 5);
+        add_line_to_chart(lineChart, file_paths.get(0), "6 nodes", 6);
   
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -82,7 +84,10 @@ public class CPUByIR extends Application {
 					int IR = Integer.parseInt(st.nextToken());
 					double CPU = Double.parseDouble(st.nextToken());
 					HashMapUtils.insert(cpus_by_IR, IR, CPU);
-					if(IR>90000){ max_avg = max_avg + CPU; i++;}
+					if(IR>90000 && num==3){ max_avg = max_avg + CPU; i++;}
+					else if(IR>92000 && num==4){ max_avg = max_avg + CPU; i++;}
+					else if(IR>92000 && num==5){ max_avg = max_avg + CPU; i++;}
+					else if(IR>92000 && num==6){ max_avg = max_avg + CPU; i++;}
 				}
 				line = reader.readLine();
 			}
