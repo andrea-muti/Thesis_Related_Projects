@@ -1,13 +1,10 @@
-package charts;
+package charts_decommissions;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javafx.application.Application;
@@ -17,9 +14,9 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class RTmeanByIR extends Application {
-
-    @Override public void start(Stage stage) {
+public class CpuDuringDecommission extends Application {
+	
+	@Override public void start(Stage stage) {
 
     	Parameters parameters = getParameters();    
 	    List<String> rawArguments = parameters.getRaw();
@@ -35,93 +32,102 @@ public class RTmeanByIR extends Application {
     	}
 	    
     
-        stage.setTitle("Response Time [mean] VS Input Rate");
+        stage.setTitle("CPU during Decommission");
 
-        final NumberAxis xAxis = new NumberAxis(0000,210000,10000);
+        final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Input Rate [ requests/second ]");
+        xAxis.setLabel("time");
         //xAxis.setTickUnit(10);
-		yAxis.setLabel("mean RT  [ msec ]");
+        
+		yAxis.setLabel("CPU %");
 		yAxis.setTickUnit(2);
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Mean Response Time VS Input Rate");
+        lineChart.setTitle("CPU during Decommission");
         lineChart.setCreateSymbols(false);  
             
-        add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
-        add_line_to_chart(lineChart, file_paths.get(0), "4 nodes", 4);
-        add_line_to_chart(lineChart, file_paths.get(0), "5 nodes", 5);
-        add_line_to_chart(lineChart, file_paths.get(0), "6 nodes", 6);
-  
+        add_line_to_chart(lineChart, file_paths.get(0), "from 6 to 5 nodes", 3);
+        //add_line_to_chart(lineChart, file_paths.get(1), "from 5 to 4 nodes", 4);
+        //add_line_to_chart(lineChart, file_paths.get(2), "from 4 to 3 nodes", 5);
+      
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
         stage.show();
     }
     
+    
+    
 	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, int num) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 	    series.setName(name);
 
-	    Map<Integer, LinkedList<Double>> mrt_by_IR = new Hashtable<Integer,LinkedList<Double>>();
-	    
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-			System.out.println(" * parsing input file");
-			//                 nodi, IR,    CPU,    THR      mRT  p95RT
-			// line format :    3;  2000; 24.415; 1979.999; 1.34;  2.0;
+			System.out.println("\n * parsing input file");
+			//                 nodi, IR,    CPU,    THR       mRT  p95RT
+			// line format :    3; 80000; 91.701;  79753.125; 5.8; 16.0;
 			//     n token :    0     1      2        3       4     5   
+			int time = 0;
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line,";");
-				int nodi = Integer.parseInt(st.nextToken()); // nodi 
-				if(num == nodi){		
-					int IR = Integer.parseInt(st.nextToken());
-					st.nextToken(); //cpu
-					st.nextToken(); // th
-					double mrt = Double.parseDouble(st.nextToken());
-					HashMapUtils.insert(mrt_by_IR, IR, mrt);
-				}
+				st.nextToken();
+				st.nextToken();
+				double cpu = Double.parseDouble(st.nextToken());
+					
+				series.getData().add(new XYChart.Data<Number, Number>(time, cpu));
+				time=time+15;
+				
 				line = reader.readLine();
 			}
 			reader.close();
-			
-			System.out.println(" * computing averages");
-			Map<Integer, Double> avg_rt_by_IR = HashMapUtils.compute_averages(mrt_by_IR);
-			
-			Object[] set_keys = avg_rt_by_IR.keySet().toArray();
-			Arrays.sort(set_keys);
-			
-			for(Object elem : set_keys){
-				int ir = (int) elem;
-				double rt = (double) avg_rt_by_IR.get(elem);
-				
-		    	System.out.println(String.format("%d",(ir/1000))+";"+String.format("%.3f", rt)+";");
-		    	
-				series.getData().add(new XYChart.Data<Number, Number>(ir, rt));
-				
-			}
-			
-			/*
-			Iterator<Entry<Integer,Double>> iter2 = avg_rt_by_IR.entrySet().iterator();
-			while(iter2.hasNext()){
-				Entry<Integer,Double> entry = iter2.next();
-				double IR = entry.getKey();
-				double RT = entry.getValue();	
-				
-				series.getData().add(new XYChart.Data<Number, Number>(IR, RT));
-			}
-			*/
-			
+
 			lineChart.getData().add(series);
 			System.out.println(" * new line inserted");
+			
+			
+			
 		} catch (IOException e) {
 			System.err.println("Error in opening|writing|closing the file: "+file_path);
 			e.printStackTrace();
 		}	
-		System.out.println("\n");
+		
+		XYChart.Series<Number, Number> seriesnodi = new XYChart.Series<Number, Number>();
+	    seriesnodi.setName("number of nodes");
+
+		
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file_path));
+			System.out.println("\n * parsing input file");
+			//                 nodi, IR,    CPU,    THR       mRT  p95RT
+			// line format :    3; 80000; 91.701;  79753.125; 5.8; 16.0;
+			//     n token :    0     1      2        3       4     5   
+			int time = 0;
+			String line = reader.readLine();
+			while(line!=null){
+				StringTokenizer st = new StringTokenizer(line,";");
+				int nodi = Integer.parseInt(st.nextToken());
+				st.nextToken();
+			
+				seriesnodi.getData().add(new XYChart.Data<Number, Number>(time, nodi*10));
+				time=time+15;
+		
+				line = reader.readLine();
+			}
+			reader.close();
+
+			lineChart.getData().add(seriesnodi);
+			System.out.println(" * new line inserted");
+			
+			
+			
+		} catch (IOException e) {
+			System.err.println("Error in opening|writing|closing the file: "+file_path);
+			e.printStackTrace();
+		}
 	}
 
 
@@ -130,6 +136,7 @@ public class RTmeanByIR extends Application {
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
     	}
+    	
         launch(args);
     }
 }

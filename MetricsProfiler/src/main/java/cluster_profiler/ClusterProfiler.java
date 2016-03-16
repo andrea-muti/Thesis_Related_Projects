@@ -41,7 +41,7 @@ public class ClusterProfiler {
 		rampup_seconds = rampdown_seconds = Integer.parseInt(prop_jmeter.getProperty("rampDuration"));			
 		int constant_duration = Integer.parseInt(prop_jmeter.getProperty("testDuration"));
 		
-		int intersampling_collection = 2;
+		int intersampling_collection = 1;
 		int inter_run_interval = 10;
 		int bonus_seconds = 12;
 		int bonus_seconds_down = 10;		
@@ -53,10 +53,8 @@ public class ClusterProfiler {
 							  52000, 54000, 56000, 58000, 60000, 62000, 64000, 66000, 68000, 70000 };
 		
 		 */
-		int[] input_rates = { 190000, 192000, 200000 };
+		int[] input_rates = { 10000 };
 
-		
-		
 		
 		//int[] input_rates = { 10000, 15000, 20000 }; 
 		int n = 0;
