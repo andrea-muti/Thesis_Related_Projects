@@ -49,8 +49,8 @@ public class ThroughputDuringJoining extends Application {
         lineChart.setCreateSymbols(false);  
             
         //add_line_to_chart(lineChart, file_paths.get(0), "from 3 to 4 nodes", 3, 80000);
-        //add_line_to_chart(lineChart, file_paths.get(0), "from 4 to 5 nodes", 4, 95000);
-        add_line_to_chart(lineChart, file_paths.get(0), "from 5 to 6 nodes", 5, 112000);
+        add_line_to_chart(lineChart, file_paths.get(0), "from 4 to 5 nodes", 4, 95000);
+        //add_line_to_chart(lineChart, file_paths.get(0), "from 5 to 6 nodes", 5, 112000);
       
         Scene scene  = new Scene(lineChart,800,600);       
        

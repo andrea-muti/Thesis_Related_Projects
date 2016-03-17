@@ -3,12 +3,11 @@ package charts;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import javafx.application.Application;
@@ -91,14 +90,19 @@ public class RTp95ByIR extends Application {
 			reader.close();
 			
 			System.out.println(" * computing averages");
-			Map<Integer, Double> avg_throughput_by_IR = HashMapUtils.compute_averages(p95rt_by_IR);
+			Map<Integer, Double> avg_p95rt_by_IR = HashMapUtils.compute_averages(p95rt_by_IR);
 			
-			Iterator<Entry<Integer,Double>> iter2 = avg_throughput_by_IR.entrySet().iterator();
-			while(iter2.hasNext()){
-				Entry<Integer,Double> entry = iter2.next();
-				double IR = entry.getKey();
-				double TH = entry.getValue();
-				series.getData().add(new XYChart.Data<Number, Number>(IR, TH));
+			Object[] set_keys = p95rt_by_IR.keySet().toArray();
+			Arrays.sort(set_keys);
+			
+			for(Object elem : set_keys){
+				int ir = (int) elem;
+				double rt = (double) avg_p95rt_by_IR.get(elem);
+				//System.out.println(String.format("%d",(ir/1000)));
+		    	System.out.println(String.format("%.3f", rt));
+		    	
+				series.getData().add(new XYChart.Data<Number, Number>(ir, rt));
+				
 			}
 			
 			lineChart.getData().add(series);

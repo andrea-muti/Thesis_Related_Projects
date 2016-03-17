@@ -97,8 +97,8 @@ public class RTmeanByIR extends Application {
 			for(Object elem : set_keys){
 				int ir = (int) elem;
 				double rt = (double) avg_rt_by_IR.get(elem);
-				
-		    	System.out.println(String.format("%d",(ir/1000))+";"+String.format("%.3f", rt)+";");
+				//System.out.println(String.format("%d",(ir/1000)));
+		    	System.out.println(String.format("%.3f", rt));
 		    	
 				series.getData().add(new XYChart.Data<Number, Number>(ir, rt));
 				
