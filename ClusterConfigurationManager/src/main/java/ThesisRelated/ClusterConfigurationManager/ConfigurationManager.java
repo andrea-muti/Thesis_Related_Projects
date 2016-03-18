@@ -67,7 +67,7 @@ public class ConfigurationManager {
 		// DECOMMISSION
 		boolean decommission_result = decommissionNode(ip_address, jmx_port);
 		if(!decommission_result){ success = false; }
-		
+
 		return success;
 	}
 	
