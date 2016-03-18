@@ -143,6 +143,7 @@ public class Normalizer {
 			return normalized;
 	}
 	
+	@SuppressWarnings("unused")
 	private double denormalize_value(double normalized, double min, double max) {
 		double denormalized = (normalized * (max - min) + min);
 		return denormalized;
