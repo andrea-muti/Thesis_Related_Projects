@@ -90,9 +90,16 @@ public class ConfigurationManager {
 		try { remote = aux_jmxcm.connect(); } 
 		catch (Exception e) { success = false; }
 		
-		// decommission
+		// decommission [ QUESTA CHIAMATA E' BLOCCANTE ]
 		boolean decomm_result = aux_jmxcm.decommission(remote);
 		if(!decomm_result){ success = false; }
+		
+		// check whether the state of the node is actually DECOMMISSIONED
+		String node_state = aux_jmxcm.getOperationMode(remote);
+		if( !node_state.equalsIgnoreCase("DECOMMISSIONED") ){ 
+			System.err.println(" - decommission returned successfully but the node state is not DECOMMISSIONED ["+node_state+"]");
+			success = false; 
+		}
 		
 		// closing the jmx connection
 		aux_jmxcm.disconnect();
@@ -146,8 +153,7 @@ public class ConfigurationManager {
 	}
 	
 	
-	
-	
+
     // ---------------------------------------------------------------------------------
 	
 	/** GET CONTACT POINT ADDRESS

@@ -98,9 +98,16 @@ public class JMXConnectionManager {
 	}
 	
 	
-    // dovrebbe ritornare un valore tra
-    // - "STARTING" , "NORMAL", "JOINING", "LEAVING", "DECOMMISSIONED", "MOVING", "DRAINING", "DRAINED"
-    // - "ERROR"  [se qualcosa non va. definito da me]
+ 
+	/** getOperationMode() 
+	 *  	returns a string representing the Operational State of the node that the
+	 *  	MBeanServerConnection 'remote' refers to. 
+	 * 
+	 * @param remote : the MBeanServerConnection with the node
+	 * @return String, operation mode of the node - values in
+	 * 		[ "STARTING" , "NORMAL", "JOINING", "LEAVING", "DECOMMISSIONED", 
+	 *        "MOVING", "DRAINING", "DRAINED" "ERROR" ]
+	 */
 	public String getOperationMode(MBeanServerConnection remote){
     	String mode = "ERROR";
     	String objname = "org.apache.cassandra.db:type=StorageService";
