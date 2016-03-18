@@ -85,9 +85,9 @@ public class CPUByIR extends Application {
 					double CPU = Double.parseDouble(st.nextToken());
 					HashMapUtils.insert(cpus_by_IR, IR, CPU);
 					if(IR>90000 && num==3){ max_avg = max_avg + CPU; i++;}
-					else if(IR>92000 && num==4){ max_avg = max_avg + CPU; i++;}
-					else if(IR>92000 && num==5){ max_avg = max_avg + CPU; i++;}
-					else if(IR>92000 && num==6){ max_avg = max_avg + CPU; i++;}
+					else if(IR>103000 && num==4){ max_avg = max_avg + CPU; i++;}
+					else if(IR>116000 && num==5){ max_avg = max_avg + CPU; i++;}
+					else if(IR>129000 && num==6){ max_avg = max_avg + CPU; i++;}
 				}
 				line = reader.readLine();
 			}
