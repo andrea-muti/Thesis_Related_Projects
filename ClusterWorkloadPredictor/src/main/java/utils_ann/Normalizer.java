@@ -15,7 +15,7 @@ public class Normalizer {
 	String filepath;
 	boolean has_headers;
 	String separator;
-	String resultpath="/home/andrea-muti/Scrivania/data_normalized.csv";
+	String resultpath="/home/andrea-muti/Scrivania/sin_data_normalized.csv";
 	int num_columns;
 	List<MinMaxHolder> min_max_values ;
 	
@@ -67,7 +67,7 @@ public class Normalizer {
 				//System.out.println("column #"+col_index+"    max: "+max+" | min: "+min);
 				
 				// FEDERICO DICE : raddoppiare il max value per far prevere meglio i picchi, dove le ANN hanno difficoltà
-				int scaling_factor = 2;
+				double scaling_factor = 1.0;
 				this.min_max_values.add( col_index, new MinMaxHolder(min, scaling_factor*max) );
 			}
 		}
@@ -124,7 +124,8 @@ public class Normalizer {
 					String stringtoken = st.nextToken();
 					Double value = Double.parseDouble(stringtoken);
 					double value_normalized = normalize_value(value, this.min_max_values.get(i).getMin(), this.min_max_values.get(i).getMax());
-				    resultline = resultline+value_normalized+separator;
+				    double value_normalized_and_formatted = Double.parseDouble(String.format("%.4f", value_normalized).replace(",", "."));
+					resultline = resultline+value_normalized_and_formatted+separator;
 				    i++;
 				}
 				
@@ -151,8 +152,8 @@ public class Normalizer {
 	
 	public static void main(String[] args){
 		
-		String path = "/home/andrea-muti/Scrivania/wikipedia_trace.csv";
-		Normalizer norm = new Normalizer(path, false, ",");
+		String path = "/home/andrea-muti/Scrivania/data_original.csv";
+		Normalizer norm = new Normalizer(path, true, ",");
 		List<MinMaxHolder> lista = norm.get_MinMaxList();
 	
 		for(int i = 0; i<lista.size(); i ++ ){
@@ -161,7 +162,7 @@ public class Normalizer {
 		
 		try {
 			norm.normalize();
-		} catch (Exception e) {System.out.println("eccezione");}
+		} catch (Exception e) {System.out.println("eccezione "+e.getMessage());}
 		
 	}
 

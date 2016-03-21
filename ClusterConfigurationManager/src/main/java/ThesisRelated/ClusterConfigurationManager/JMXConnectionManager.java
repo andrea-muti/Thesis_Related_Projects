@@ -73,6 +73,18 @@ public class JMXConnectionManager {
 		return result;
 	}
 	
+	public boolean drain(MBeanServerConnection remote){
+		boolean result = true;
+		ObjectName on;
+		try {
+			on = new ObjectName("org.apache.cassandra.db:type=StorageService");
+			remote.invoke(on, "drain",null, null);
+		} catch (Exception  e) {
+			result = false;
+		}
+		return result;
+	}
+	
 	public boolean startGossip(MBeanServerConnection remote){
 		boolean result = true;
 		ObjectName on;
@@ -116,7 +128,8 @@ public class JMXConnectionManager {
 			 mode = (String) remote.getAttribute(bean, "OperationMode");
 		}
         catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException |
-        	   MBeanException | ReflectionException	| IOException e) {} 
+        	   MBeanException | ReflectionException	| IOException e) {}
+        catch (Exception e){}
         
     	return mode;
     }
@@ -177,7 +190,8 @@ public class JMXConnectionManager {
 			live_nodes = (List<String>) remote.getAttribute(bean, "LiveNodes");
 		}
         catch (MalformedObjectNameException | AttributeNotFoundException | InstanceNotFoundException |
-         	   MBeanException | ReflectionException	| IOException e) {} 
+         	   MBeanException | ReflectionException	| IOException e) {}
+        catch (Exception e){}
         
     	return live_nodes;
     }
