@@ -8,6 +8,8 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -61,6 +63,8 @@ public class ConfigurationManager {
 	 */
 	public boolean addNode(String ip_address, String jmx_port){
 		boolean success = true;
+		long start,end;
+		double start_time;
 		
 		// check that the node to insert is not already a node of the cluster
 		List<String> live_nodes = getLiveNodes(this.contact_point_address, this.jmx_port_number);
@@ -72,12 +76,18 @@ public class ConfigurationManager {
 		// 0) in teoria qui andrebbe accesa la VM corrispondente al nodo
 		
 		// 1) STARTING THE NEW NODE
-		System.out.print(" ---- starting cassandra process the new node ("+ip_address+") : ");
-	
+		System.out.println(" ---- starting cassandra process on the new node ("+ip_address+")");
+		start = System.currentTimeMillis();
+		
 		boolean startup_result = start_cassandra(ip_address);
-		if( startup_result ){  System.out.println("DONE"); }
+		end = System.currentTimeMillis();
+		
+		start_time = (end - start) / 1000;
+		if( startup_result ){  
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec ]"); 
+		}
 		else{
-			System.out.println("FAILED");
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec ]");
 			return false;
 		}
 		
@@ -90,6 +100,8 @@ public class ConfigurationManager {
 		}
 		
 		boolean cleanup_result;
+		
+		double cleanup_time;
 		for(String node_ip : live_nodes){
 			// in teoria l'IP del nodo rimosso non dovrebbe essere incluso tra i live_nodes
 			// ma nella pratica succede che a causa di ritardi nell'aggiornamento delle liste
@@ -97,13 +109,15 @@ public class ConfigurationManager {
 			// facciamo dunque il check a mano
 			if(!node_ip.equals(ip_address)){  
 				System.out.print(" ---- executing cleanup on node "+node_ip+" : ");
+				start = System.currentTimeMillis();
 				// exec cleanup on the node
 				cleanup_result = ClusterScriptExecutor.cleanup(node_ip, this.remote_username, 
 						     this.remote_password, this.remote_cassandra_dir);
-				
-				if(cleanup_result){ System.out.println(" DONE"); }
+				end = System.currentTimeMillis();
+				cleanup_time = (end - start) / 1000;
+				if(cleanup_result){ System.out.println(" DONE [ "+cleanup_time+" sec ]"); }
 				else{ 
-					System.out.println(" FAILED"); 
+					System.out.println(" FAILED [ "+cleanup_time+" s ]"); 
 					return false; 
 				}
 			}
@@ -112,6 +126,8 @@ public class ConfigurationManager {
 		return success;
 	}
 	
+	
+
 	/** REMOVE NODE 
 	 * 		removes the node with IP=ip_address from the cluster.
 	 * 		ATTENZIONE : il metodo è BLOCCANTE ( a causa della decommission interna )
@@ -121,6 +137,7 @@ public class ConfigurationManager {
 	 */
 	public boolean removeNode(String ip_address, String jmx_port){
 		boolean success = true;
+		long start,end;
 		
 		// check that the node to remove is actually a node of the cluster
 		List<String> live_nodes = getLiveNodes(this.contact_point_address, this.jmx_port_number);
@@ -129,12 +146,26 @@ public class ConfigurationManager {
 			return false;
 		}
 		
+		// faccio partire il thread parallelo per il check dello status del nodo da rimuovere
+		// lo status viene monitorato finchè esso non diventa 'DECOMMISSIONED'
+		StatusChecker checker = new StatusChecker(ip_address, this.jmx_port_number, "DECOMMISSIONED");
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.execute(checker);
+		
+		double dec_time;
+		start = System.currentTimeMillis();
 		// 1) DECOMMISSION
-		System.out.print(" ---- decommissioning node ("+ip_address+") : ");
+		System.out.println(" ---- decommissioning node ("+ip_address+")");
 		boolean decommission_result = decommissionNode(ip_address, jmx_port);
-		if( decommission_result ){  System.out.println("DONE"); }
+		end = System.currentTimeMillis();
+		dec_time = (end-start)/1000;
+		// aspetto qualche secondo bonus prima di killare il cassandra process
+		try { Thread.sleep(4000); } 
+		catch (InterruptedException e) {}
+		
+		if( decommission_result ){  System.out.println(" ---- decommission of node ("+ip_address+") : DONE [ "+dec_time+" sec ]"); }
 		else{
-			System.out.println("FAILED");
+			System.out.println(" ---- decommission of node ("+ip_address+") : FAILED [ "+dec_time+" sec ]");
 			return false;
 		}
 		
@@ -167,6 +198,68 @@ public class ConfigurationManager {
 	
 	// ---------------------------------------------------------------------------------
 	
+	
+	/** cleanup_all_nodes()
+	 * 		triggers a remote execution of a cleanup operation on all the cassandra nodes of the clustr
+	 * 
+	 * @return true if all cleanups executes successfully, false otherwise.
+	 */
+	public boolean cleanup_all_nodes(){
+		List<String> live_nodes = getLiveNodes(this.contact_point_address, this.jmx_port_number);
+		
+		if( live_nodes == null ){
+			System.err.println(" - ERROR : No Live Nodes in the Cluster!");
+			return false;
+		}
+		System.out.println(" - Cleaning up all nodes of the cluster");
+		boolean cleanup_result;
+		long start,end;
+		double cleanup_time;
+		for(String node_ip : live_nodes){
+
+			System.out.print(" ---- executing cleanup on node "+node_ip+" : ");
+			start = System.currentTimeMillis();
+			// exec cleanup on the node
+			cleanup_result = ClusterScriptExecutor.cleanup(node_ip, this.remote_username, 
+					     this.remote_password, this.remote_cassandra_dir);
+			end = System.currentTimeMillis();
+			cleanup_time = (end - start) / 1000;
+			if(cleanup_result){ System.out.println(" DONE [ "+cleanup_time+" sec ]"); }
+			else{ 
+				System.out.println(" FAILED [ "+cleanup_time+" s ]"); 
+				return false; 
+			}
+
+		}
+		return true;
+	}
+	
+	
+	/** check_is_normal
+ 	 * 		returns true if the cassandra node @ IP address 'ip_address' is in NORMAL state, false otherwise
+	 * @param ip_address : String representing the IP address of the node to check
+	 * @return true if the node is in state NORMAL, false otherwise
+	 */
+	private boolean check_is_normal(String ip_address) {
+		boolean result = true;
+		// creazione jmx manager
+		JMXConnectionManager aux_jmxcm = new JMXConnectionManager(ip_address, this.jmx_port_number);
+		
+		// connection 
+		MBeanServerConnection remote = null;
+		try { remote = aux_jmxcm.connect(); } 
+		catch (Exception e) { result = false; }
+		
+		String state  = aux_jmxcm.getOperationMode(remote);
+		if(state.equals("NORMAL")){result = true;}
+		else{result = false;}
+		
+		// closing the jmx connection
+		aux_jmxcm.disconnect();
+		return result;
+	}
+	
+	
 	/** kill_cassandra_process
 	 * 		kills the cassandra process that is currently running on the node 'ip_address'
 	 * 
@@ -178,6 +271,7 @@ public class ConfigurationManager {
 				     this.remote_password);
 		return kill_result;
 	}
+	
 	
 	/** old_data_removal
 	 * 		removes the content of <cassandra-dir>/data directory form the node 'ip_address'
@@ -193,6 +287,7 @@ public class ConfigurationManager {
 		return success;
 	}
 
+	
 	/** cleanup
 	 * 		remotely invokes the cleanup on the node with IP:ip_addr
 	 *
@@ -205,6 +300,7 @@ public class ConfigurationManager {
 					     this.remote_password, this.remote_cassandra_dir);
 	}
 	
+	
 	/** start_cassandra
 	 * 		remotely invokes the startup of the cassandra process the node with IP:ip_addr
 	 *
@@ -214,36 +310,39 @@ public class ConfigurationManager {
 	 */
 	private boolean start_cassandra(String ip_address){
 		boolean success = true;
+		
+		// faccio partire il thread parallelo per il check dello status del nuovo nodo
+		StatusChecker checker = new StatusChecker(ip_address, this.jmx_port_number, "NORMAL");
+		ExecutorService executor = Executors.newFixedThreadPool(1);
+		executor.execute(checker);
+		
+		// la start_cassandra NON è bloccante
 		boolean start = ClusterScriptExecutor.start_cassandra( ip_address, 
 				this.remote_username, this.remote_password, this.remote_cassandra_dir);
 		
-		if(!start){
+		if( !start ){
 			System.err.println(" - ERROR : failed to remotely start the cassandra process");
 			success = false;
 		}
 		else{
-			// check status of the node 
-			// creazione jmx manager
-			JMXConnectionManager aux_jmxcm = new JMXConnectionManager(ip_address, this.jmx_port_number);
 			
-			// connection 
-			MBeanServerConnection remote = null;
-			try { remote = aux_jmxcm.connect(); } 
-			catch (Exception e) { 
-				System.err.println(" - ERROR : "+e.getMessage());
-				return false; 
+			// siccome ClusterScriptExecutor.start_cassandra non è bloccante, devo aspettare 
+			// finche il nuovo nodo non diventa normal
+			// qui aspettare finche stato nuovo nodo non diventa NORMAL
+			while( !check_is_normal(ip_address) ){
+				try { Thread.sleep(1000); } 
+				catch (InterruptedException e) {}
 			}
 			
-			// check whether the state of the node is actually NORMAL
-			String node_state = aux_jmxcm.getOperationMode(remote);
-			if( !node_state.equalsIgnoreCase("NORMAL") ){ 
-				System.err.println(" - startup call returned successfully but the node state is not NORMAL ["+node_state+"]");
-				success = false; 
-			}
+			// aspetto qualche secondo bonus prima di ritornare
+			try { Thread.sleep(4000); } 
+			catch (InterruptedException e) {}
+			
 		}
 		return success;
 	}
 
+	
 	/** decommissionNode
 	 * 		remotely invokes the decommission of the node with IP:ip_addr
 	 *
@@ -279,6 +378,7 @@ public class ConfigurationManager {
 		return success;
 	}
 	
+	
 	/** drainNode
 	 * 		remotely invokes the drain of the node with IP:ip_addr
 	 *
@@ -307,6 +407,7 @@ public class ConfigurationManager {
 		return success;
 	}
 	
+	
 	/** getLiveNodes
 	 * 		returns a list of Strings with IP addresses of currently live nodes
 	 * 
@@ -334,6 +435,7 @@ public class ConfigurationManager {
 	}
 	
 	
+	
 	/** STOP GOSSIP 
 	 * 		stops the gossip service on the node with IP=ip_address 
 	 * @param ip_address : IP Address of the node 
@@ -356,6 +458,7 @@ public class ConfigurationManager {
 	}
 	
 
+	
 	/** START GOSSIP 
 	 * 		starts the gossip service on the node with IP=ip_address 
 	 * @param ip_address : IP Address of the node 
@@ -379,12 +482,14 @@ public class ConfigurationManager {
 
     // ---------------------------------------------------------------------------------
 	
+	
 	/** GET CONTACT POINT ADDRESS
 	 * @return string, the contact point ip address
 	 */
 	public String getContactPointAddress(){
 		return this.contact_point_address;
 	}
+	
 	
 	/** GET JMX CONNECTION MANAGER
 	 * @return the JMXConnectionManager of this ConfigurationManager
@@ -398,7 +503,7 @@ public class ConfigurationManager {
 	//  main di prova
     public static void main( String[] args ) throws MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException, IOException{
     	System.out.println("\n *************************");
-    	System.out.println(" * Cluster Manager Prova *");
+    	System.out.println(" *    Cluster Manager    *");
         System.out.println(" *************************\n");
         
         String properties_path = "resources/properties/propertiesCM.properties";
@@ -410,26 +515,26 @@ public class ConfigurationManager {
         System.out.println(" - START @ "+start.toString()+"\n");
         
         
-        // AGGIUNTA NODO [ SEMBRA FUNZIONARE ]
+        //confManager.cleanup_all_nodes();
+        
+        /*
+        // AGGIUNTA NODO 
         String ip_new_node = "192.168.1.34";
         System.out.println(" - adding new cassandra node on "+ip_new_node);
         boolean resStopGossip = confManager.addNode(ip_new_node, "7199");
         if(resStopGossip){ System.out.println(" - node insertion : OK"); }
         else{ System.out.println(" - node insertion : FAILED"); }
-        /*  */
+          */
         
-        
-        /*
+       
         // RIMOZIONE NODO 
-		// ATTENZIONE LA DECOMMISSION E' BLOCCANTE ! 
-        String ip_to_remove = "192.168.1.34";
-		javax.swing.JOptionPane.showMessageDialog(null, "press Ok to remove the node from the cluster");
+      	String ip_to_remove = "192.168.1.34";
 		System.out.println(" - invoked removal of node "+ip_to_remove);
 		boolean resDecom = confManager.removeNode(ip_to_remove, "7199");
 		if(resDecom){ System.out.println(" - removing node : OK"); }
 		else{ System.out.println(" - removing node : FAILED"); }
 		
-		   */
+		 /*   */
         
         ZonedDateTime end = ZonedDateTime.now();
         
@@ -437,5 +542,6 @@ public class ConfigurationManager {
         
         Duration duration = Duration.between(start,end);
         System.out.println(" - Elapsed Time : " + duration.toString().substring(2));
+        System.exit(0);
     }
 }

@@ -1,0 +1,45 @@
+ *************************
+ *    Cluster Manager    *
+ *************************
+
+ - START @ 2016-03-22T12:09:10.230+01:00[Europe/Rome]
+
+ - adding new cassandra node on 192.168.1.34
+ ---- starting cassandra process on the new node (192.168.1.34)
+     - state of node @ 192.168.1.34 : DOWN
+     - state of node @ 192.168.1.34 : ~DOWN
+     - state of node @ 192.168.1.34 : STARTING
+     - state of node @ 192.168.1.34 : JOINING
+     - state of node @ 192.168.1.34 : NORMAL
+ ---- startup of cassandra process on new node (192.168.1.34) : DONE [ 96.0 sec ]
+ ---- executing cleanup on node 192.168.0.169 :  DONE [ 197.0 sec ]
+ ---- executing cleanup on node 192.168.1.0 :  DONE [ 154.0 sec ]
+ ---- executing cleanup on node 192.168.1.7 :  DONE [ 164.0 sec ]
+ - node insertion : OK
+
+ - END @ 2016-03-22T12:19:23.354+01:00[Europe/Rome]
+ - Elapsed Time : 10M13.124S
+ 
+ 
+ ----------------------------------------------------------------------------------------------------------
+ 
+ 
+  *************************
+  *    Cluster Manager    *
+  *************************
+
+ - START @ 2016-03-22T12:23:45.647+01:00[Europe/Rome]
+
+ - invoked removal of node 192.168.1.34
+ ---- decommissioning node (192.168.1.34)
+     - state of node @ 192.168.1.34 : NORMAL
+     - state of node @ 192.168.1.34 : LEAVING
+     - state of node @ 192.168.1.34 : DECOMMISSIONED
+ ---- decommission of node (192.168.1.34) : DONE [ 103.0 sec ]
+ ---- killing cassandra process on node (192.168.1.34) : DONE
+ ---- removing old data from the node (192.168.1.34) : DONE
+ - removing node : OK
+
+ - END @ 2016-03-22T12:25:34.563+01:00[Europe/Rome]
+ - Elapsed Time : 1M48.916S
+ 

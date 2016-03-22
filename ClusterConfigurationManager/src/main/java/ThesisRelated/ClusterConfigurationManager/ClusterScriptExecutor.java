@@ -30,26 +30,8 @@ public class ClusterScriptExecutor {
 							  +remote_user+" "+remote_pass+" "+cass_path;
 	
 		try{
+			@SuppressWarnings("unused")
 			Process starter_process = Runtime.getRuntime().exec(exec_command);
-			String line = "";
-		   
-		   
-	       BufferedReader en = new BufferedReader(new InputStreamReader(starter_process.getErrorStream()));
-	       while ((line = en.readLine()) != null) {
-	         if(line.equals("Permission denied, please try again.")){
-	        	 System.out.print(" PERMISSION DENIED -->");
-	        	 success = false;
-	         }
-	         else if(line.contains("File") && line.contains("directory")){
-	        	 System.out.print(" ERROR Non existing dir -->");
-	        	 success = false;
-	         }      
-	       }
-	       en.close();
-	      
-	       System.out.print(" ( wait for starter script to complete : ");
-	       starter_process.waitFor();
-	       System.out.println("OK )");
 		}
 		catch(Exception e){
 			System.err.println(" - ERROR in the startup of cassandra on node "+node_ip);
