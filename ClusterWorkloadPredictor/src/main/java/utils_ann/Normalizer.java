@@ -15,7 +15,7 @@ public class Normalizer {
 	String filepath;
 	boolean has_headers;
 	String separator;
-	String resultpath="/home/andrea-muti/Scrivania/sin_data_normalized.csv";
+	String resultpath="/home/andrea-muti/Scrivania/dataset_normalized.csv";
 	int num_columns;
 	List<MinMaxHolder> min_max_values ;
 	
@@ -152,8 +152,8 @@ public class Normalizer {
 	
 	public static void main(String[] args){
 		
-		String path = "/home/andrea-muti/Scrivania/data_original.csv";
-		Normalizer norm = new Normalizer(path, true, ",");
+		String path = "/home/andrea-muti/Scrivania/dataset.csv";
+		Normalizer norm = new Normalizer(path, false, ",");
 		List<MinMaxHolder> lista = norm.get_MinMaxList();
 	
 		for(int i = 0; i<lista.size(); i ++ ){
