@@ -68,16 +68,15 @@ public class DatasetVisualizer extends Application {
 			//     n token :   0    1   
 			String line = reader.readLine();
 			double i = 0;
-			while(line!=null){
+			while( line!=null ){
+				if( i<1){ i++; line = reader.readLine(); continue; }
 				StringTokenizer st = new StringTokenizer(line);
 				double time = Double.parseDouble(st.nextToken()); 
 				time = i;
 				double value = Double.parseDouble(st.nextToken()); 
 				System.out.println(" (time,val) = ("+i+" , "+value+" )");
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
-				
 				line = reader.readLine();
-			
 				i++;
 			}
 			reader.close();
@@ -91,6 +90,7 @@ public class DatasetVisualizer extends Application {
 
 
     public static void main(String[] args) {
+    	args[0]="/home/andrea-muti/Scrivania/dataset_twitter/complete_twitter_dataset.csv";
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
