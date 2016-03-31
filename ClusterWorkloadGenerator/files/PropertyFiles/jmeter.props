@@ -1,0 +1,8 @@
+### JMETER PROPERTIES USED IN THE WORKLOAD GENERATOR ####
+
+
+jmxFile=files/jmeter_plans/workload_generation_plan.jmx
+java_rmi_server_hostname=192.168.1.6
+jmeter_slaves_IPs=192.168.2.119,192.168.2.119\:1100,192.168.1.113,192.168.1.116,192.168.0.133
+noGui=true
+jMeterPath=/home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/jmeter

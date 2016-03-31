@@ -1,0 +1,19 @@
+2016/03/30 19:53:09 INFO  - jmeter.util.JMeterUtils: Setting Locale to it_IT 
+2016/03/30 19:53:09 ERROR - jmeter.util.JMeterUtils: Could not find resources for 'it_IT' 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Loading user properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/user.properties 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Loading system properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/system.properties 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Setting System property: java.rmi.server.hostname=192.168.1.6 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Copyright (c) 1998-2015 The Apache Software Foundation 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Version 2.13.20160210 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: java.version=1.8.0_66 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.name=Linux 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.arch=amd64 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.version=4.2.0-16-generic 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: file.encoding=UTF-8 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: Default Locale=italiano (Italia) 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: JMeter  Locale=italiano (Italia) 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: JMeterHome=/home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: user.dir  =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: PWD       =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
+2016/03/30 19:53:09 INFO  - jmeter.JMeter: IP: 127.0.1.1 Name: AM-HP-dv6 FullName: AM-HP-dv6 

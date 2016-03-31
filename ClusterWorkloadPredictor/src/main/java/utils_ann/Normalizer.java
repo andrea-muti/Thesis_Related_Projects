@@ -15,7 +15,8 @@ public class Normalizer {
 	String filepath;
 	boolean has_headers;
 	String separator;
-	String resultpath="/home/andrea-muti/Scrivania/dataset_normalized.csv";
+	static String resultpath="resources/normalized_formatted_out-romasicura-count-per-min.csv";
+	//static String resultpath="resources/noSpike_normalized_dataset.csv";
 	int num_columns;
 	List<MinMaxHolder> min_max_values ;
 	
@@ -123,9 +124,25 @@ public class Normalizer {
 				while(st.hasMoreTokens()){
 					String stringtoken = st.nextToken();
 					Double value = Double.parseDouble(stringtoken);
-					double value_normalized = normalize_value(value, this.min_max_values.get(i).getMin(), this.min_max_values.get(i).getMax());
-				    double value_normalized_and_formatted = Double.parseDouble(String.format("%.4f", value_normalized).replace(",", "."));
-					resultline = resultline+value_normalized_and_formatted+separator;
+					double value_normalized;
+					
+					boolean cutter = true;
+					double cut_threshold = 140.0;
+					
+					if(cutter){
+						if(!st.hasMoreElements()){ // sono al token con il carico (l'ultimo)
+							if( value >= cut_threshold ){ value=cut_threshold; }
+							value_normalized = normalize_value(value, this.min_max_values.get(i).getMin(), cut_threshold);
+						}
+						else{ // non sono all'ultimo token, procedo normalmente
+							value_normalized = normalize_value(value, this.min_max_values.get(i).getMin(), this.min_max_values.get(i).getMax());
+						}
+					}else{
+						value_normalized = normalize_value(value, this.min_max_values.get(i).getMin(), this.min_max_values.get(i).getMax());
+					}
+					
+				    String value_formatted = String.format("%.16f", value_normalized).replace(",", ".");
+					resultline = resultline+value_formatted+separator;
 				    i++;
 				}
 				
@@ -152,18 +169,20 @@ public class Normalizer {
 	
 	public static void main(String[] args){
 		
-		String path = "/home/andrea-muti/Scrivania/dataset.csv";
-		Normalizer norm = new Normalizer(path, false, ",");
+		String inpath = "resources/formatted_out-romasicura-count-per-min.csv";
+		//String path = "resources/noSpikes_to_renormalize_datafile.csv";
+		Normalizer norm = new Normalizer(inpath, false, ",");
 		List<MinMaxHolder> lista = norm.get_MinMaxList();
 	
 		for(int i = 0; i<lista.size(); i ++ ){
 			System.out.println("column #"+i+" | min: "+lista.get(i).getMin()+" , max: "+lista.get(i).getMax());
 		}
-		
+		System.out.println("\n * start normalization");
 		try {
 			norm.normalize();
 		} catch (Exception e) {System.out.println("eccezione "+e.getMessage());}
-		
+		System.out.println(" * normalization of "+inpath+" finished");
+		System.out.println(" * output file : "+resultpath);
 	}
 
 }

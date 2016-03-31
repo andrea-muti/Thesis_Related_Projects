@@ -4,7 +4,6 @@ package twitter_dataset;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -78,6 +77,7 @@ public class DatasetVisualizer extends Application {
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
 				
 				line = reader.readLine();
+			
 				i++;
 			}
 			reader.close();
