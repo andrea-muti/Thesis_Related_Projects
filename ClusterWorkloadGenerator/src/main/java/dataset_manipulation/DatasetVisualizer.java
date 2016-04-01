@@ -44,7 +44,7 @@ public class DatasetVisualizer extends Application {
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Twitter Dataset over Time");
+        lineChart.setTitle("Twitter Dataset");
         lineChart.setCreateSymbols(false);  
         
         System.out.println(" - start generation of the dataset chart");
@@ -96,8 +96,8 @@ public class DatasetVisualizer extends Application {
     public static void main(String[] args) {
     	args = new String[1];
     	// args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
-    	// args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
-    	 args[0] = "files/datasets/workload_day_2.csv";  // DAY X DATASET FILE
+    	 //args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
+    	 args[0] = "files/datasets/workload_day_16.csv";  // DAY X DATASET FILE
     	
     	
     	if(args.length<1){

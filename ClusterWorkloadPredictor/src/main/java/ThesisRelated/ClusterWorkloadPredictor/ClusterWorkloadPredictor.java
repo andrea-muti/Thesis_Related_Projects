@@ -45,6 +45,7 @@ public class ClusterWorkloadPredictor {
 		this.min_workload_value = Double.parseDouble(properties.getProperty("min_workload_value"));
      	this.max_workload_value = Double.parseDouble(properties.getProperty("max_workload_value"));
      	this.initial_timestamp = getInitialWorkloadTimestamp();
+     	System.out.println(" - initial timestamp taken from workload file: "+this.workloadFilePath);
 	}
 	
 	public String getWorkloadFilePath() {
@@ -135,13 +136,14 @@ public class ClusterWorkloadPredictor {
 		//double predicted_next_10_min_input_rate  = predictor.predict_load_in_next_x_minutes(10);
 		//System.out.println(" - predicted next 10 min input rate : "+predicted_next_10_min_input_rate);
 		
-		PrintWriter writer = new PrintWriter("/home/andrea-muti/Scrivania/pred_day_2_time_load.csv", "UTF-8") ;	
+		PrintWriter writer = new PrintWriter("/home/andrea-muti/Scrivania/pred_week_6_time_load.csv", "UTF-8") ;	
 		
-		System.out.println("writing data on file...");
+		System.out.println(" - writing data on file...");
 		Calendar cal = new GregorianCalendar();
 		int day_length = 24 * 60;
+		int week_length = day_length * 7;
 		
-		for(int i = 0 ; i<day_length; i++){
+		for(int i = 0 ; i<week_length; i++){
 			double  predicted_next_x_min_input_rate  = predictor.predict_load_in_next_x_minutes(i);
 			long N_MINUTES   = 60 * 1000 * i;
 			long next_n_minutes = predictor.getInitialWorkloadTimestamp() + N_MINUTES;
@@ -155,7 +157,7 @@ public class ClusterWorkloadPredictor {
 			//writer.write(hour+":"+minute+":00 "+ String.format("%.8f", predicted_next_x_min_input_rate)+"\n");
 			writer.write(hour +" "+ String.format("%.8f", predicted_next_x_min_input_rate)+"\n");
 		}
-		System.out.println("done");
+		System.out.println(" - done");
 		writer.close();
 		
 

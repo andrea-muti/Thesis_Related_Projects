@@ -88,10 +88,9 @@ public class PredictionVisualizer extends Application {
 			lineChart.getData().add(series);
 			
 		} catch (Exception e) {
-			System.out.println(time);
-			System.err.println("\nError in opening|writing|closing the file: "+file_path+"\nExiting Program");
-			System.out.println(e.getMessage());
-			e.printStackTrace();
+			System.err.println("\nError in opening|writing|closing the file: "+file_path);
+			System.err.println("[  "+e.getMessage()+"  ]");
+			System.err.println("\nExiting Program");
 			System.exit(0);
 		}	
 	}
@@ -102,7 +101,7 @@ public class PredictionVisualizer extends Application {
     	// args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
     	// args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
     	// args[0] = "files/datasets/workload_day_1.csv";  // DAY X DATASET FILE
-    	 args[0] = "/home/andrea-muti/Scrivania/pred_day_2_time_load.csv";
+    	 args[0] = "/home/andrea-muti/Scrivania/pred_week_6_time_load.csv";
     	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

@@ -33,7 +33,7 @@ public class JMeterPlanCreator {
 		// TODO : far leggere tutto ciò da file properties
 		this.separator	   = " ";
 		this.has_headers   = false;
-		this.filepath 	   = "files/datasets/workload_day_2.csv"; 
+		this.filepath 	   = "files/datasets/workload_day_16.csv"; 
 		this.single_duration_sec = 60;
 		this.number_of_jmeter_slaves = 1;
 		this.scaling_factor = 1;
