@@ -72,27 +72,27 @@ public class ClusterWorkloadPredictor {
 		
 	}
 	
-	public double predict_load_in_next_x_minutes(int n_minutes){
+	public double predict_load_in_next_x_hours(int n_hours){
 		
 
 		Calendar cal = new GregorianCalendar();
 	
-		long N_MINUTES   = 60 * 1000 * n_minutes;
+		long N_HOURS   = 60 * 60 * 1000 * n_hours;
 		
-		long next_n_minutes = this.initial_timestamp + N_MINUTES;
+		long next_n_minutes = this.initial_timestamp + N_HOURS;
 		
 		cal.setTimeInMillis(next_n_minutes);
 		
 		double future_wday = cal.get(Calendar.DAY_OF_WEEK);
 		double future_hour = cal.get(Calendar.HOUR_OF_DAY);
-		double future_minute = cal.get(Calendar.MINUTE);
+	
 		//System.out.println(" used ts : " +future_wday+" "+future_hour+" "+future_minute);
 		
 		double future_wday_normalized = normalize_value(future_wday, 1, 7);
 		double future_hour_normalized = normalize_value(future_hour, 0, 23);
-		double future_minute_normalized = normalize_value(future_minute, 0, 59);
+
 		
-		double[] input_values = { future_wday_normalized,  future_hour_normalized, future_minute_normalized };
+		double[] input_values = { future_wday_normalized,  future_hour_normalized };
 	
 		BasicMLData data = new BasicMLData(input_values);
 
@@ -130,32 +130,24 @@ public class ClusterWorkloadPredictor {
 		ClusterWorkloadPredictor predictor = new ClusterWorkloadPredictor();
        
 		
-		//double predicted_current_input_rate     = predictor.predict_load_in_next_x_minutes(0);
-		//System.out.println(" - predicted current input rate : "+predicted_current_input_rate);
-      
-		//double predicted_next_10_min_input_rate  = predictor.predict_load_in_next_x_minutes(10);
-		//System.out.println(" - predicted next 10 min input rate : "+predicted_next_10_min_input_rate);
+		String outfile_path = "resources/datasets/predictions/prediction_week_1_time_load.csv";
+		 
+		PrintWriter writer = new PrintWriter(outfile_path, "UTF-8") ;	
 		
-		PrintWriter writer = new PrintWriter("/home/andrea-muti/Scrivania/pred_week_6_time_load.csv", "UTF-8") ;	
-		
-		System.out.println(" - writing data on file...");
+		System.out.println(" - writing data on file "+outfile_path);
 		Calendar cal = new GregorianCalendar();
-		int day_length = 24 * 60;
+		int day_length = 24;
 		int week_length = day_length * 7;
+		int complete_workload_length = week_length * 6;
 		
 		for(int i = 0 ; i<week_length; i++){
-			double  predicted_next_x_min_input_rate  = predictor.predict_load_in_next_x_minutes(i);
-			long N_MINUTES   = 60 * 1000 * i;
-			long next_n_minutes = predictor.getInitialWorkloadTimestamp() + N_MINUTES;
+			double  predicted_next_x_hours_input_rate  = predictor.predict_load_in_next_x_hours(i);
+			long N_HOURS   = 60 * 60 * 1000 * i;
+			long next_n_hours = predictor.getInitialWorkloadTimestamp() + N_HOURS;
 			
-			cal.setTimeInMillis(next_n_minutes);
-					
-			int day_number = cal.get(Calendar.DAY_OF_MONTH);
+			cal.setTimeInMillis(next_n_hours);
 			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			int minute = cal.get(Calendar.MINUTE);
-			
-			//writer.write(hour+":"+minute+":00 "+ String.format("%.8f", predicted_next_x_min_input_rate)+"\n");
-			writer.write(hour +" "+ String.format("%.8f", predicted_next_x_min_input_rate)+"\n");
+			writer.write(hour +" "+ String.format("%.8f", predicted_next_x_hours_input_rate)+"\n");
 		}
 		System.out.println(" - done");
 		writer.close();
@@ -164,6 +156,7 @@ public class ClusterWorkloadPredictor {
        } 
        catch (Exception e) {
     	   System.err.println(" - ERROR : something wrong occurred");
+    	   e.printStackTrace();
     	   if(e.getMessage()!=null){System.out.println("   "+e.getMessage());}
        } 
        

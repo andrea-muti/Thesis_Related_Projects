@@ -40,7 +40,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [min]");
+        xAxis.setLabel("Time [ hours ]");
         xAxis.setTickUnit(10);
 		yAxis.setLabel("Load [ tpm ]");
 
@@ -85,7 +85,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
 				time = i;
 				double value = Double.parseDouble(st.nextToken()); 
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
-			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
+			    series.getData().add(new XYChart.Data<Number, Number>(time/60, value));
 				line = reader.readLine();
 				i++;
 			}
@@ -113,15 +113,17 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			String line = reader.readLine();
 			double i = 0;
 			while( line!=null ){
-				if( i<1){ i++; line = reader.readLine(); continue; }
+			
 				StringTokenizer st = new StringTokenizer(line);
 				double time = Double.parseDouble(st.nextToken()); 
 				time = i;
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")); 
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
-			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
+				for(int j=0; j<61;j++){
+					series.getData().add(new XYChart.Data<Number, Number>((time+j)/60, value));
+				}
 				line = reader.readLine();
-				i++;
+				i=i+60;
 			}
 			reader.close();
 			lineChart.getData().add(series);
@@ -134,11 +136,12 @@ public class WorkloadVsPredictionVisualizer extends Application {
 
 
     public static void main(String[] args) {
-    	int x = 6;
+    	int x = 1;
     	args = new String[3];
     	args[0]="Week "+x;
-    	args[1]="/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator/files/datasets/workload_week_"+x+".csv"; // carico settimana vero
-    	args[2]="/home/andrea-muti/Scrivania/pred_week_"+x+"_time_load.csv"; // carico settimana predetto
+    	
+    	args[1]="/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadPredictor/resources/datasets/single_week_workloads/workload_week_"+x+".csv"; // carico giorno vero
+    	args[2]="resources/datasets/predictions/prediction_week_"+x+"_time_load.csv"; 
     	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

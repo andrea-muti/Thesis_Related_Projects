@@ -69,7 +69,7 @@ public class Normalizer {
 				//System.out.println("column #"+col_index+"    max: "+max+" | min: "+min);
 				
 				// FEDERICO DICE : raddoppiare il max value per far prevere meglio i picchi, dove le ANN hanno difficoltà
-				double scaling_factor = 1.2;
+				double scaling_factor = 1.0;
 				this.min_max_values.add( col_index, new MinMaxHolder(min, scaling_factor*max) );
 			}
 		}
