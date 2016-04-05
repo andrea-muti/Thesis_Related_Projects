@@ -1,19 +1,69 @@
-2016/03/30 19:53:09 INFO  - jmeter.util.JMeterUtils: Setting Locale to it_IT 
-2016/03/30 19:53:09 ERROR - jmeter.util.JMeterUtils: Could not find resources for 'it_IT' 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Loading user properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/user.properties 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Loading system properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/system.properties 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Setting System property: java.rmi.server.hostname=192.168.1.6 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Copyright (c) 1998-2015 The Apache Software Foundation 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Version 2.13.20160210 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: java.version=1.8.0_66 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.name=Linux 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.arch=amd64 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: os.version=4.2.0-16-generic 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: file.encoding=UTF-8 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: Default Locale=italiano (Italia) 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: JMeter  Locale=italiano (Italia) 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: JMeterHome=/home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: user.dir  =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: PWD       =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
-2016/03/30 19:53:09 INFO  - jmeter.JMeter: IP: 127.0.1.1 Name: AM-HP-dv6 FullName: AM-HP-dv6 
+2016/04/04 19:05:41 INFO  - jmeter.util.JMeterUtils: Setting Locale to it_IT 
+2016/04/04 19:05:41 ERROR - jmeter.util.JMeterUtils: Could not find resources for 'it_IT' 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Loading user properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/user.properties 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Loading system properties from: /home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13/bin/system.properties 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Setting System property: java.rmi.server.hostname=192.168.1.6 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Copyright (c) 1998-2015 The Apache Software Foundation 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Version 2.13.20160210 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: java.version=1.8.0_66 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: java.vm.name=Java HotSpot(TM) 64-Bit Server VM 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: os.name=Linux 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: os.arch=amd64 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: os.version=4.2.0-16-generic 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: file.encoding=UTF-8 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: Default Locale=italiano (Italia) 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: JMeter  Locale=italiano (Italia) 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: JMeterHome=/home/andrea-muti/Scrivania/jmeter_source/apache-jmeter-2.13 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: user.dir  =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: PWD       =/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator 
+2016/04/04 19:05:42 INFO  - jmeter.JMeter: IP: 127.0.1.1 Name: AM-HP-dv6 FullName: AM-HP-dv6 
+2016/04/04 19:05:42 INFO  - jmeter.services.FileServer: Default base='/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator' 
+2016/04/04 19:05:42 INFO  - jmeter.services.FileServer: Set new base='/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator/files/jmeter_plans' 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: Using SaveService properties file encoding UTF-8 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: Using SaveService properties file version 1656252 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: Using SaveService properties version 2.8 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: All converter versions present and correct 
+2016/04/04 19:05:43 INFO  - jmeter.save.SaveService: Loading file: /home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadGenerator/files/jmeter_plans/workload_plan.jmx 
+2016/04/04 19:05:43 INFO  - jmeter.JMeter: Creating summariser <summary> 
+2016/04/04 19:05:43 INFO  - jmeter.engine.DistributedRunner: Configuring remote engine: 192.168.2.119 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Configuring remote engine: 192.168.2.119:1100 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Configuring remote engine: 192.168.1.113 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Configuring remote engine: 192.168.1.116 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Configuring remote engine: 192.168.0.133 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Starting remote engines 
+2016/04/04 19:05:44 INFO  - jmeter.engine.DistributedRunner: Starting the test @ Mon Apr 04 19:05:44 CEST 2016 (1459789544373) 
+2016/04/04 19:05:44 INFO  - jmeter.engine.ClientJMeterEngine: running clientengine run method 
+2016/04/04 19:05:44 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must contain the string: '.functions.' 
+2016/04/04 19:05:44 INFO  - jmeter.engine.util.CompoundVariable: Note: Function class names must not contain the string: '.gui.' 
+2016/04/04 19:05:44 INFO  - jmeter.samplers.SampleEvent: List of sample_variables: [] 
+2016/04/04 19:05:44 INFO  - jmeter.samplers.NoSendSampleSender: Using NoSendSampleSender for this test run 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: sent test to 192.168.2.119:1100 basedir='files/jmeter_plans' 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: Sending properties {} 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: sent run command to 192.168.2.119:1100 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: running clientengine run method 
+2016/04/04 19:05:51 INFO  - jmeter.samplers.NoSendSampleSender: Using NoSendSampleSender for this test run 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: sent test to 192.168.2.119 basedir='files/jmeter_plans' 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: Sending properties {} 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: sent run command to 192.168.2.119 
+2016/04/04 19:05:51 INFO  - jmeter.engine.ClientJMeterEngine: running clientengine run method 
+2016/04/04 19:05:51 INFO  - jmeter.samplers.NoSendSampleSender: Using NoSendSampleSender for this test run 
+2016/04/04 19:05:51 INFO  - jmeter.JMeter: Started remote host:  192.168.2.119:1100 (1459789551936) 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent test to 192.168.1.116 basedir='files/jmeter_plans' 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: Sending properties {} 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent run command to 192.168.1.116 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: running clientengine run method 
+2016/04/04 19:05:52 INFO  - jmeter.samplers.NoSendSampleSender: Using NoSendSampleSender for this test run 
+2016/04/04 19:05:52 INFO  - jmeter.JMeter: Started remote host:  192.168.2.119 (1459789552212) 
+2016/04/04 19:05:52 INFO  - jmeter.JMeter: Started remote host:  192.168.1.116 (1459789552316) 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent test to 192.168.0.133 basedir='files/jmeter_plans' 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: Sending properties {} 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent run command to 192.168.0.133 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: running clientengine run method 
+2016/04/04 19:05:52 INFO  - jmeter.samplers.NoSendSampleSender: Using NoSendSampleSender for this test run 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent test to 192.168.1.113 basedir='files/jmeter_plans' 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: Sending properties {} 
+2016/04/04 19:05:52 INFO  - jmeter.engine.ClientJMeterEngine: sent run command to 192.168.1.113 
+2016/04/04 19:05:52 INFO  - jmeter.engine.DistributedRunner: Remote engines have been started 
+2016/04/04 19:05:52 INFO  - jmeter.JMeter: Started remote host:  192.168.1.113 (1459789552904) 
+2016/04/04 19:05:53 INFO  - jmeter.JMeter: Started remote host:  192.168.0.133 (1459789553002) 

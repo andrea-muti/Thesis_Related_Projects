@@ -2,6 +2,8 @@ package jmeter_automation;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -70,10 +72,10 @@ public class JMeterController {
 		String params = generateJMeterParameters( this.noGui, this.jmxFile, this.java_rmi_server_hostname, 
 												  this.jmeter_slaves_IPs);
 
-		long test_duration = 0; // test duration è calcolabile con n_righe file * durata ogni riga
+		long test_duration = 1441 * 8 * 1000; // test duration è calcolabile con n_righe file * durata ogni riga
 		long total_duration = 20*1000 + test_duration; // è la durata del test jmeter
 		
-		// invokes the execution of JMeter Master ( that will call the slaves)
+		// invokes the execution of JMeter Master ( that will call the slaves )
 		try {
 			ProgressController progressController = new ProgressUI();
 
@@ -117,11 +119,16 @@ public class JMeterController {
 												   String jmeter_slaves_IPs ) {
 		
 		jmxFile = FileUtils.getAbsolutePath(jmxFile);
+		Path currentRelativePath = Paths.get("");
+		String s = currentRelativePath.toAbsolutePath().toString();
+		
+		
+		String jmxFilePath = s+"/"+jmxFile.toString();
 		
 		String params = "";
 		if( noGui ){ params += " -n"; }
 		
-		params  += " -t " + jmxFile.toString()
+		params  += " -t " + jmxFilePath
 				+  " -R "+jmeter_slaves_IPs
 				+  " -Djava.rmi.server.hostname="+rmi_server_hostname;
 		

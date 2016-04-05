@@ -15,7 +15,8 @@ public class Normalizer {
 	String filepath;
 	boolean has_headers;
 	String separator;
-	static String resultpath="resources/normalized_formatted_out-romasicura-count-per-min.csv";
+	static String resultpath="resources/datasets/normalized_scaled12_formatted_overprovision_1h_complete_twitter_dataset.csv";
+	//static String resultpath="resources/datasets/normalized_formatted_overprovision_95p_halfhour_complete_twitter_dataset.csv";
 	//static String resultpath="resources/noSpike_normalized_dataset.csv";
 	int num_columns;
 	List<MinMaxHolder> min_max_values ;
@@ -68,7 +69,7 @@ public class Normalizer {
 				//System.out.println("column #"+col_index+"    max: "+max+" | min: "+min);
 				
 				// FEDERICO DICE : raddoppiare il max value per far prevere meglio i picchi, dove le ANN hanno difficoltà
-				double scaling_factor = 1.0;
+				double scaling_factor = 1.2;
 				this.min_max_values.add( col_index, new MinMaxHolder(min, scaling_factor*max) );
 			}
 		}
@@ -126,7 +127,7 @@ public class Normalizer {
 					Double value = Double.parseDouble(stringtoken);
 					double value_normalized;
 					
-					boolean cutter = true;
+					boolean cutter = false;
 					double cut_threshold = 140.0;
 					
 					if(cutter){
@@ -169,7 +170,8 @@ public class Normalizer {
 	
 	public static void main(String[] args){
 		
-		String inpath = "resources/formatted_out-romasicura-count-per-min.csv";
+		String inpath = "resources/datasets/formatted_overprovision_1h_complete_twitter_dataset.csv";
+		//String inpath = "resources/datasets/formatted_overprovision_95p_halfhour_complete_twitter_dataset.csv";
 		//String path = "resources/noSpikes_to_renormalize_datafile.csv";
 		Normalizer norm = new Normalizer(inpath, false, ",");
 		List<MinMaxHolder> lista = norm.get_MinMaxList();

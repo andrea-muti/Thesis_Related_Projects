@@ -22,7 +22,7 @@ public class WorkloadGenerator {
         	try { Thread.sleep(1000); } 
         	catch (InterruptedException e) {}
         }
-        
+  
         System.exit(0);
     }
 }

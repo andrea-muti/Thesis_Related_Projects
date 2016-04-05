@@ -34,9 +34,10 @@ public class JMeterPlanCreator {
 		this.separator	   = " ";
 		this.has_headers   = false;
 		this.filepath 	   = "files/datasets/workload_day_16.csv"; 
-		this.single_duration_sec = 60;
-		this.number_of_jmeter_slaves = 1;
-		this.scaling_factor = 1;
+		//this.filepath 	   = "files/datasets/fake_dataset.csv"; 
+		this.single_duration_sec = 5;
+		this.number_of_jmeter_slaves = 5;
+		this.scaling_factor = 300;
 		
 	}
 	
@@ -125,6 +126,9 @@ public class JMeterPlanCreator {
 				
 				value = (value * this.scaling_factor);
 				value = (value / this.number_of_jmeter_slaves) ;
+				
+				// if value == 0 jmeter stops the execution of the test plan, therefore we force the value to be not zero
+				if(value == 0){ value=1*this.scaling_factor/this.number_of_jmeter_slaves; }
 				
 				String entry =   "<collectionProp name=\"-139272128\">\n"
 							   + "\t<stringProp name=\"1537214\">"+value+"</stringProp>\n"
