@@ -97,7 +97,7 @@ public class DatasetVisualizer extends Application {
     	args = new String[1];
     	// args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
     	 //args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
-    	 args[0] = "files/datasets/workload_day_16.csv";  // DAY X DATASET FILE
+    	 args[0] = "files/datasets/workload_day_7.csv";  // DAY X DATASET FILE
     	
     	//args[0] = "/home/andrea-muti/Scrivania/clarknet_trace/output_clarknet.txt";  // CLARKNET
     	

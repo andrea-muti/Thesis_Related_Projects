@@ -35,6 +35,7 @@ public class JMRunner {
 	}
 	
 	/** main di prova **/
+	@SuppressWarnings("unused")
 	public static void main(String[] args){
 		System.out.println("\n ************** JMETER RUNNER ***************\n");
 		

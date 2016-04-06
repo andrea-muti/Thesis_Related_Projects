@@ -18,6 +18,7 @@ public class JMeterController {
 	private File 	jmxFile; 
 	private String java_rmi_server_hostname;
 	private String jmeter_slaves_IPs;
+	@SuppressWarnings("unused")
 	private int slaves_number;
 	private boolean isRunning;
 	

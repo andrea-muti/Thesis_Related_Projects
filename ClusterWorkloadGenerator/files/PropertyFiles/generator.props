@@ -1,1 +1,13 @@
-#### PROPERTIES USED BY THE WORKLOAD GENERATOR #####
+####################################################
+#    PROPERTIES USED BY THE WORKLOAD GENERATOR     #
+#        [ or any of its sum-modules ]             #
+####################################################
+
+csv_separator=" "
+has_headers=false
+workload_filepath=files/datasets/workload_day_16.csv
+single_duration_sec=8
+number_of_jmeter_slaves=5
+
+# per il giorno 16 è un buon valore
+scaling_factor=815 	

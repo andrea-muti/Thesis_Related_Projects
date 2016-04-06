@@ -29,15 +29,16 @@ public class JMeterPlanCreator {
 	private int scaling_factor;
 	
 	// public constructor
-	public JMeterPlanCreator(){
-		// TODO : far leggere tutto ciò da file properties
-		this.separator	   = " ";
-		this.has_headers   = false;
-		this.filepath 	   = "files/datasets/workload_day_16.csv"; 
-		//this.filepath 	   = "files/datasets/fake_dataset.csv"; 
-		this.single_duration_sec = 5;
-		this.number_of_jmeter_slaves = 5;
-		this.scaling_factor = 300;
+	public JMeterPlanCreator( String workload_csv_file_path, String separator, boolean has_headers, 
+							  int single_duration_sec, int num_jmeter_slaves, int scaling_factor ){
+		
+		this.filepath 	   = workload_csv_file_path; 
+		this.separator	   = separator;
+		this.has_headers   = has_headers;
+
+		this.single_duration_sec = single_duration_sec;
+		this.number_of_jmeter_slaves = num_jmeter_slaves;
+		this.scaling_factor = scaling_factor;
 		
 	}
 	
@@ -106,7 +107,6 @@ public class JMeterPlanCreator {
 		return ending_section; 
 	}
 	
-	
 	public String create_workload_section(){
 		String workload_section = "";
 		
@@ -146,29 +146,50 @@ public class JMeterPlanCreator {
 		return workload_section;
 	}
 	
+	public boolean create_plan_and_save_on_file(String output_file_path){
+		boolean result = true;
+		String initial_section = this.create_initial_section();
+		String workload_section = this.create_workload_section();
+		if(workload_section.equals("")){return false;}
+		String ending_section = this.create_ending_section();
+		
+		String complete_plan = initial_section+"\n"+workload_section+"\n"+ending_section;
+		try{
+			PrintWriter writer = new PrintWriter(output_file_path, "UTF-8") ;	
+			writer.write(complete_plan);
+			writer.close();
+		}
+		catch(Exception e){ result = false; }
+		return result;
+	}
+	
 	public static void main(String[] args){
 		
 		System.out.println(" - JMeter Workload Plan Creator");
 		
-		String output_path = "files/jmeter_plans/workload_plan.jmx";
+		String output_file_path = "files/jmeter_plans/workload_plan.jmx";
+		
+		String workload_csv_file_path = "";
+		String separator = " ";
+		boolean has_headers = false; 
+		int single_duration_sec = 5;
+		int num_jmeter_slaves = 5;
+		int scaling_factor = 300;
 
 		try{
 			
-			JMeterPlanCreator plan_creator = new JMeterPlanCreator();
-			String initial_section = plan_creator.create_initial_section();
-			String workload_section = plan_creator.create_workload_section();
-			String ending_section = plan_creator.create_ending_section();
+			JMeterPlanCreator plan_creator = new JMeterPlanCreator(workload_csv_file_path, separator, 
+					has_headers, single_duration_sec, num_jmeter_slaves, scaling_factor);
 			
-			String complete_plan = initial_section+"\n"+workload_section+"\n"+ending_section;
+			if(plan_creator.create_plan_and_save_on_file(output_file_path)){
+				System.out.println(" - jmeter workload plan created successfully");
+			}
+			else{ throw new Exception(); }
 			
-			PrintWriter writer = new PrintWriter(output_path, "UTF-8") ;	
-			writer.write(complete_plan);
-			writer.close();
 			
-			System.out.println(" - jmeter workload plan created successfully");
 		}
 		catch(Exception e){
-			System.out.println(" - ERROR creating jmeter workload plan");
+			System.err.println(" - ERROR creating jmeter workload plan");
 		}
 		
 	}

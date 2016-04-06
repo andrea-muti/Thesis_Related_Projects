@@ -69,19 +69,19 @@ public class ClusterWorkloadPredictor {
 		}
 		
 		return result;
-		
 	}
 	
 	public double predict_load_in_next_x_hours(int n_hours){
-		
 
 		Calendar cal = new GregorianCalendar();
-	
+		
+		// how many milliseconds in n_hours hours
 		long N_HOURS   = 60 * 60 * 1000 * n_hours;
 		
-		long next_n_minutes = this.initial_timestamp + N_HOURS;
+		// point in time (msec from epoc) to predict wrt the initial workload timestamp
+		long next_n_hours = this.initial_timestamp + N_HOURS;  
 		
-		cal.setTimeInMillis(next_n_minutes);
+		cal.setTimeInMillis(next_n_hours);
 		
 		double future_wday = cal.get(Calendar.DAY_OF_WEEK);
 		double future_hour = cal.get(Calendar.HOUR_OF_DAY);
@@ -90,8 +90,7 @@ public class ClusterWorkloadPredictor {
 		
 		double future_wday_normalized = normalize_value(future_wday, 1, 7);
 		double future_hour_normalized = normalize_value(future_hour, 0, 23);
-
-		
+	
 		double[] input_values = { future_wday_normalized,  future_hour_normalized };
 	
 		BasicMLData data = new BasicMLData(input_values);
@@ -120,39 +119,38 @@ public class ClusterWorkloadPredictor {
 	}
 
 	
-    public static void main( String[] args ) {
+    @SuppressWarnings("unused")
+	public static void main( String[] args ) {
     	
     	System.out.println("********************************************");
         System.out.println("*** CLUSTER WORKLOAD PREDICTOR TEST MAIN ***");
         System.out.println("********************************************");
         
        try {
-		ClusterWorkloadPredictor predictor = new ClusterWorkloadPredictor();
+    	   ClusterWorkloadPredictor predictor = new ClusterWorkloadPredictor();
        
-		
-		String outfile_path = "resources/datasets/predictions/prediction_week_1_time_load.csv";
+    	   String outfile_path = "resources/datasets/predictions/prediction_day_16_time_load.csv"; 
 		 
-		PrintWriter writer = new PrintWriter(outfile_path, "UTF-8") ;	
+    	   PrintWriter writer = new PrintWriter(outfile_path, "UTF-8") ;	
 		
-		System.out.println(" - writing data on file "+outfile_path);
-		Calendar cal = new GregorianCalendar();
-		int day_length = 24;
-		int week_length = day_length * 7;
-		int complete_workload_length = week_length * 6;
+    	   System.out.println(" - writing data on file "+outfile_path);
+    	   Calendar cal = new GregorianCalendar();
+    	   int day_length = 24; 							// how many hours in a day
+    	   int week_length = day_length * 7;				// how many hours in a week
+    	   //  int complete_workload_length = week_length * 6;	// how many hours in the complete dataset (actually, the complete dataset is 41 days, not 42)
 		
-		for(int i = 0 ; i<week_length; i++){
-			double  predicted_next_x_hours_input_rate  = predictor.predict_load_in_next_x_hours(i);
-			long N_HOURS   = 60 * 60 * 1000 * i;
-			long next_n_hours = predictor.getInitialWorkloadTimestamp() + N_HOURS;
+    	   for(int i = 0 ; i<day_length; i++){
+    		   double  predicted_next_x_hours_input_rate  = predictor.predict_load_in_next_x_hours(i);
+    		   long N_HOURS   = 60 * 60 * 1000 * i;
+    		   long next_n_hours = predictor.getInitialWorkloadTimestamp() + N_HOURS;
 			
-			cal.setTimeInMillis(next_n_hours);
-			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			writer.write(hour +" "+ String.format("%.8f", predicted_next_x_hours_input_rate)+"\n");
-		}
-		System.out.println(" - done");
-		writer.close();
+    		   cal.setTimeInMillis(next_n_hours);
+    		   int hour = cal.get(Calendar.HOUR_OF_DAY);
+    		   writer.write(hour +" "+ String.format("%.8f", predicted_next_x_hours_input_rate)+"\n");
+    	   }
+    	   System.out.println(" - done");
+    	   writer.close();
 		
-
        } 
        catch (Exception e) {
     	   System.err.println(" - ERROR : something wrong occurred");
