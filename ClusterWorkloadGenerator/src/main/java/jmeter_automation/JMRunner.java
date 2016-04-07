@@ -35,15 +35,11 @@ public class JMRunner {
 	}
 	
 	/** main di prova **/
-	@SuppressWarnings("unused")
 	public static void main(String[] args){
 		System.out.println("\n ************** JMETER RUNNER ***************\n");
-		
-		
+
 		String properties_file_path = "files/PropertyFiles/jmeter.props";
 		JMRunner runner = new JMRunner(properties_file_path);
-		
-		File prop_file = new File(properties_file_path);	
 		
 		runner.runWorkload();
 			

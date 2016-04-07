@@ -75,7 +75,7 @@ public class WorkloadTimeTracker {
 		else if(time_unit%3==0){
 			unit = this.time_unit/3.0;
 		}
-		if(time_unit%5==0){
+		else if(time_unit%5==0){
 			unit = this.time_unit/5.0;
 		}
 		

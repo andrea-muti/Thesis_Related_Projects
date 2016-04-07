@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import jmeter_automation.FileUtils;
+import jmeter_automation.JMRunner;
 import jmeter_plan_creation.JMeterPlanCreator;
 
 /**
@@ -34,6 +35,7 @@ public class WorkloadGenerator {
 	private int num_jmeter_slaves ;
 	private  int workload_scaling_factor ;
 	private boolean is_plan_generated;
+	private long avg_workload_duration_sec;
 	
 	/** WorkloadGenerator
 	 * 		public constructor
@@ -56,8 +58,33 @@ public class WorkloadGenerator {
         this.num_jmeter_slaves = count_slaves(props_jmeter.getProperty("jmeter_slaves_IPs").trim());
         this.workload_scaling_factor = Integer.parseInt(props_generator.getProperty("scaling_factor").trim());
         this.is_plan_generated=false;
-        System.out.println(" - created WorkloadGenerator");
-        System.out.println(" - selected workload file: "+workload_file_path);
+        System.out.println(" - [WorkloadGenerator] selected workload file: "+workload_file_path);
+        this.avg_workload_duration_sec = this.single_duration_sec * count_lines();
+
+		// creazione del JMRunner
+        // spostato nel costruttore del workload generator perche il costruttore dei JMRunner
+        // invoca a sua volta il costruttore del JMeterController che invoca la
+        // kill_and_restart_jmeter_slaves() che richiede del tempo per essere eseguita
+        // siccome nel coordinator ho il latch tra il costruttore del generator e la runWorkload()
+        // sono sicuro che se quando invoco la runWorkload() i jmeter-slaves sono stati restarted
+        JMRunner jrunner = new JMRunner(this.jmeter_props_file);
+	}
+	
+
+	public long get_avg_workload_duration_sec(){
+		return this.avg_workload_duration_sec;
+	}
+	
+	private long count_lines(){
+		long len = 0;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(this.workload_file_path));	
+			while (( br.readLine()) != null) {	len++; }
+			br.close();
+		} catch (Exception e) {
+			System.err.println(" - [WorkloadGenerator] Error reading workload file: " + this.workload_file_path);
+		}
+		return len;
 	}
 	
 	public boolean generate_jmeter_plan(){
@@ -70,18 +97,18 @@ public class WorkloadGenerator {
 	
 	public void generateWorkload(){
 		if(!this.is_plan_generated){
-			System.err.println(" - ERROR : workload cannot be executed since the jmeter plan has not been generated successfully");
+			System.err.println(" - [WorkloadGenerator] ERROR : workload cannot be executed since the jmeter plan has not been generated successfully");
 			return ;
 		}
-		
-		System.out.println(" - CARICO\n - CARICO\n - CARICO\n - CARICO");
-		try{ Thread.sleep(100*1000);}
-		catch(Exception e){}
 	
-		
-		/*
-		// creazione del JMRunner e start della workload execution
-        JMRunner jrunner = new JMRunner(this.jmeter_props_file);
+        
+        for(int i=0; i<30; i++){
+			System.out.println("     - CARICO CARICO CARICO CARICO");
+			try{ Thread.sleep(10*1000);}
+			catch(Exception e){}
+		}
+        
+        /*
         jrunner.runWorkload();
         
         // wait until termination of workload execution

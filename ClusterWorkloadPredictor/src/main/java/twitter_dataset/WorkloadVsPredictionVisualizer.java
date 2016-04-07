@@ -41,8 +41,11 @@ public class WorkloadVsPredictionVisualizer extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
+        yAxis.setTickUnit(10000);
+        
+        
         xAxis.setLabel("Time [ hours ]");
-        xAxis.setTickUnit(10);
+        xAxis.setTickUnit(1);
 		yAxis.setLabel("Load [ tpm ]");
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
@@ -82,11 +85,11 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			while( line!=null ){
 				if( i<1){ i++; line = reader.readLine(); continue; }
 				StringTokenizer st = new StringTokenizer(line);
-				double time = Double.parseDouble(st.nextToken()); 
-				time = i;
-				double value = Double.parseDouble(st.nextToken()) * scaling_factor; 
+				st.nextToken(); 
+				
+				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor; 
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
-			    series.getData().add(new XYChart.Data<Number, Number>(time/60, value));
+			    series.getData().add(new XYChart.Data<Number, Number>(i/60, value));
 				line = reader.readLine();
 				i++;
 			}
@@ -114,15 +117,15 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			while( line!=null ){
 			
 				StringTokenizer st = new StringTokenizer(line);
-				double time = Double.parseDouble(st.nextToken()); 
-				time = i;
+				st.nextToken(); 
+		
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor ; 
-				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
-				for(int j=0; j<61;j++){
-					series.getData().add(new XYChart.Data<Number, Number>((time+j)/60, value));
-				}
+				//if(value>100000){ System.out.println(" (time,val) = ("+i+" , "+value+" )");}
+				//for(int j=0; j<61;j++){
+					series.getData().add(new XYChart.Data<Number, Number>((i/60), value));
+				//}
 				line = reader.readLine();
-				i=i+60;
+				i++;
 			}
 			reader.close();
 			lineChart.getData().add(series);
@@ -136,7 +139,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
 
     public static void main(String[] args) {
     	int x = 16;
-    	int scaling_factor = 815;
+    	int scaling_factor = 810;
     	args = new String[4];
     	//args[0]="Week "+x;
     	args[0]="Day "+x;

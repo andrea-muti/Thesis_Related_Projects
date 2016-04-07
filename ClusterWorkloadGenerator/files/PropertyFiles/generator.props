@@ -10,4 +10,4 @@ single_duration_sec=8
 number_of_jmeter_slaves=5
 
 # per il giorno 16 è un buon valore
-scaling_factor=815 	
+scaling_factor=810 	
