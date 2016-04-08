@@ -126,7 +126,6 @@ public class ConfigurationManager {
 		return success;
 	}
 	
-	
 
 	/** REMOVE NODE 
 	 * 		removes the node with IP=ip_address from the cluster.
@@ -500,6 +499,28 @@ public class ConfigurationManager {
 	
 	// ---------------------------------------------------------------------------------
 
+	// FAKE ADD AND REMOVE JUST TO TEST THE AUTOSCALER
+	public boolean fake_addNode(String ip_address, String jmx_port){
+		boolean result = true;
+		String addr_node_to_add = ip_address+":"+jmx_port;
+		System.out.print("         [ConfigurationManager] - FAKE ADD NODE "+addr_node_to_add+" : ");
+		try{Thread.sleep(4000);}
+		catch(Exception e){}
+		System.out.println("DONE");
+		return result;
+	}
+	public boolean fake_removeNode(String ip_address, String jmx_port){
+		boolean result = true;
+		String addr_node_to_remove = ip_address+":"+jmx_port;
+		System.out.print("         [ConfigurationManager] - FAKE REMOVE NODE "+addr_node_to_remove+" : ");
+		try{Thread.sleep(2000);}
+		catch(Exception e){}
+		System.out.println("DONE");
+		return result;
+	}
+	
+	// ---------------------------------------------------------------------------------
+	
 	//  main di prova
     public static void main( String[] args ) throws MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException, IOException{
     	System.out.println("\n *************************");

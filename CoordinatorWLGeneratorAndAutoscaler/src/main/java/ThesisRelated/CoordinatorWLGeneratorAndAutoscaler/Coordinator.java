@@ -84,6 +84,8 @@ class GeneratorExecutorThread implements Runnable{
         } catch (InterruptedException e) {
         	System.err.println(" - [WorkloadGenerator Executor] WorkloadGenerator thread awaiting to start has been interrupet");
             e.printStackTrace();
+            System.err.println(" - [WorkloadGenerator Executor] ABORTING EXECUTION");
+            System.exit(0);
         }
         System.out.println(" - [WorkloadGenerator Executor] start generating workload");
         this.generator.generateWorkload();
@@ -125,6 +127,8 @@ class AutoscalerExecutorThread implements Runnable{
         } catch (InterruptedException e) {
         	System.err.println(" - [AutoScaler Executor] the AutoScaler thread awaiting to start has been interrupet");
             e.printStackTrace();
+            System.err.println(" - [AutoScaler Executor] ABORTING EXECUTION");
+            System.exit(0);
         }
         System.out.println(" - [AutoScaler Executor] AutoScaler starts execution");
         this.autoscaler.start();

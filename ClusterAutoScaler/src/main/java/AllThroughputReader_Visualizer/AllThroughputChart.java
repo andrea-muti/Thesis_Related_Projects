@@ -1,4 +1,4 @@
-package instant_throughput;
+package AllThroughputReader_Visualizer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,7 +16,9 @@ import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
 
-public class InstantThroughputChart extends Application {
+// versione modificata per l'all throughput reader
+
+public class AllThroughputChart extends Application {
 
     @Override public void start(Stage stage) {
 
@@ -34,7 +36,7 @@ public class InstantThroughputChart extends Application {
     	}
 	    
     
-        stage.setTitle("Throughput Over Time");
+        stage.setTitle("Total Throughput Over Time");
 
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
@@ -170,6 +172,13 @@ public class InstantThroughputChart extends Application {
 
 
     public static void main(String[] args) {
+    	args = new String[6];
+    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.0.169.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.0.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.7.txt"; 
+    	args[3] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.34.txt"; 
+    	args[4] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.57.txt"; 
+    	args[5] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.61.txt"; 
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
