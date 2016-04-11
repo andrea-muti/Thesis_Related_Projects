@@ -53,7 +53,7 @@ public class ClusterProfiler {
 							  52000, 54000, 56000, 58000, 60000, 62000, 64000, 66000, 68000, 70000 };
 		
 		 */
-		int[] input_rates = { 10000 };
+		int[] input_rates = { 80000 };
 
 		
 		//int[] input_rates = { 10000, 15000, 20000 }; 

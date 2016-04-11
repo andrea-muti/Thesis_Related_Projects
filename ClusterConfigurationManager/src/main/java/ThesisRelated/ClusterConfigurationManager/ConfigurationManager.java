@@ -2,12 +2,11 @@ package ThesisRelated.ClusterConfigurationManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -53,8 +52,8 @@ public class ConfigurationManager {
 		this.remote_cassandra_dir = cmProperties.getProperty("remote_cassandra_dir");
 	}
 	
-	// ---------------------------------------------------------------------------------
-		
+	//---------------------------------------------------------------------------------
+	
 	/** ADD NODE
 	 * 		adds the node with IP=ip_address to the cluster
 	 * @param ip_address : IP Address of the node to add
@@ -62,6 +61,48 @@ public class ConfigurationManager {
 	 * @return true if the new node was addedd successfully, false otherwise
 	 */
 	public boolean addNode(String ip_address, String jmx_port){
+		boolean success = true;
+		long start,end;
+		double start_time;
+		
+		// check that the node to insert is not already a node of the cluster
+		List<String> live_nodes = getLiveNodes(this.contact_point_address, this.jmx_port_number);
+		if( live_nodes.contains((String) ip_address) ){
+			System.err.println("\n - ERROR : the node selected for insertion is already a node of the cluster");
+			return false;
+		}
+		
+		// 0) in teoria qui andrebbe accesa la VM corrispondente al nodo
+		
+		// 1) STARTING THE NEW NODE
+		System.out.println(" ---- starting cassandra process on the new node ("+ip_address+")");
+		start = System.currentTimeMillis();
+		
+		boolean startup_result = start_cassandra(ip_address);
+		end = System.currentTimeMillis();
+		
+		start_time = (end - start) / 1000;
+		if( startup_result ){  
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec ]"); 
+		}
+		else{
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec ]");
+			return false;
+		}
+		
+		return success;
+	}
+	
+	// ---------------------------------------------------------------------------------
+		
+	/** ADD NODE with CLEANUPS
+	 * 		adds the node with IP=ip_address to the cluster
+	 *      and executes a cleanup operation on the nodes of the cluster
+	 * @param ip_address : IP Address of the node to add
+	 * @param jmx_port : JMX Port number of the node to add
+	 * @return true if the new node was addedd successfully, false otherwise
+	 */
+	public boolean addNodeCleanups(String ip_address, String jmx_port){
 		boolean success = true;
 		long start,end;
 		double start_time;
@@ -126,6 +167,7 @@ public class ConfigurationManager {
 		return success;
 	}
 	
+	// ---------------------------------------------------------------------------------
 
 	/** REMOVE NODE 
 	 * 		removes the node with IP=ip_address from the cluster.
@@ -228,9 +270,54 @@ public class ConfigurationManager {
 				System.out.println(" FAILED [ "+cleanup_time+" s ]"); 
 				return false; 
 			}
-
 		}
 		return true;
+	}
+	
+	public boolean cleanup_all_nodes_parallel(){
+		List<String> live_nodes = getLiveNodes(this.contact_point_address, this.jmx_port_number);
+		
+		if( live_nodes == null ){
+			System.err.println(" - ERROR : No Live Nodes in the Cluster!");
+			return false;
+		}
+		
+		System.out.println(" - Cleaning up all nodes of the cluster IN PARALLEL");
+		boolean cleanup_result = true;;
+		long start,end;
+		double cleanup_time;
+		int ended = live_nodes.size();
+		CountDownLatch latch = new CountDownLatch(live_nodes.size());
+		 ExecutorService executor = Executors.newFixedThreadPool(live_nodes.size());
+		for(String node_ip : live_nodes){	
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					System.out.println(" ---- executing cleanup on node "+node_ip);
+					long start = System.currentTimeMillis();
+					// exec cleanup on the node
+					boolean cleanup_result = ClusterScriptExecutor.cleanup(node_ip, remote_username, 
+							     remote_password, remote_cassandra_dir);
+					long end = System.currentTimeMillis();
+					double cleanup_time = (end - start) / 1000;
+					if(cleanup_result){ 
+						System.out.println(" ---- cleanup on node "+node_ip+" : DONE [ "+cleanup_time+" sec ]"); 
+					}
+					else{ 
+						System.out.println(" ---- cleanup on node "+node_ip+" : FAILED [ "+cleanup_time+" s ]"); 
+						cleanup_result = false;
+					}
+					latch.countDown();
+				}
+			});
+		}
+		
+		try {
+			latch.await();
+			executor.shutdown();
+		} catch (InterruptedException e) {}
+		
+		return cleanup_result;
 	}
 	
 	
@@ -530,13 +617,14 @@ public class ConfigurationManager {
         String properties_path = "resources/properties/propertiesCM.properties";
         
         ConfigurationManager confManager = new ConfigurationManager(properties_path);
-        
-        
+       
         ZonedDateTime start = ZonedDateTime.now();
-        System.out.println(" - START @ "+start.toString()+"\n");
+        System.out.println(" - START @ "+start.toString()+"\n");       
+        
+        //  confManager.cleanup_all_nodes();
         
         
-        //confManager.cleanup_all_nodes();
+        //confManager.cleanup_all_nodes_parallel();
         
         /*
         // AGGIUNTA NODO 
@@ -545,9 +633,9 @@ public class ConfigurationManager {
         boolean resStopGossip = confManager.addNode(ip_new_node, "7199");
         if(resStopGossip){ System.out.println(" - node insertion : OK"); }
         else{ System.out.println(" - node insertion : FAILED"); }
-          */
+     
         
-       
+       */
         // RIMOZIONE NODO 
       	String ip_to_remove = "192.168.1.34";
 		System.out.println(" - invoked removal of node "+ip_to_remove);
@@ -555,7 +643,6 @@ public class ConfigurationManager {
 		if(resDecom){ System.out.println(" - removing node : OK"); }
 		else{ System.out.println(" - removing node : FAILED"); }
 		
-		 /*   */
         
         ZonedDateTime end = ZonedDateTime.now();
         

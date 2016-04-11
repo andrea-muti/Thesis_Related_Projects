@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -50,14 +51,17 @@ public class AllThroughputChart extends Application {
         lineChart.setTitle("Throughput over Time");
         lineChart.setCreateSymbols(false);  
         
-        add_line_to_chart(lineChart, file_paths.get(0), "vm0");
-        add_line_to_chart(lineChart, file_paths.get(1), "vm1");
-        add_line_to_chart(lineChart, file_paths.get(2), "vm2");
-        add_line_to_chart(lineChart, file_paths.get(3), "vm3");
-        add_line_to_chart(lineChart, file_paths.get(4), "vm4");
-        add_line_to_chart(lineChart, file_paths.get(5), "vm5");
+        long first_ts = get_first_ts(file_paths);
+        System.out.println("first min ts : "+first_ts);
+        
+        add_line_to_chart(lineChart, file_paths.get(0), "vm0", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(1), "vm1", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(2), "vm2", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(3), "vm3", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(4), "vm4", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(5), "vm5", first_ts);
       
-        add_line_to_chart_cumulative(lineChart, file_paths, "total");
+        add_line_to_chart_cumulative(lineChart, file_paths, "total", first_ts);
         
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -65,7 +69,33 @@ public class AllThroughputChart extends Application {
         stage.show();
     }
     
-    private void add_line_to_chart_cumulative(LineChart<Number, Number> lineChart, List<String> file_paths, String string) {
+    private long get_first_ts(List<String> file_paths) {
+		long[] primi_ts = new long[file_paths.size()];
+		int i=0;
+		for(String path : file_paths){	    
+		    //carico il primo file
+		    try{
+	    		BufferedReader reader = new BufferedReader(new FileReader(path));
+				
+				// line format : 0.00 0.301
+				//     n token :   0    1   
+				String line = reader.readLine();
+				
+				if(line!=null){
+					StringTokenizer st = new StringTokenizer(line);
+					long ts = Long.parseLong(st.nextToken()); 
+					primi_ts[i]=ts;
+				}
+				reader.close();
+		    }catch(Exception e){}
+		    i++;
+		}
+		
+		Arrays.sort(primi_ts);
+		return primi_ts[0];
+	}
+
+	private void add_line_to_chart_cumulative(LineChart<Number, Number> lineChart, List<String> file_paths, String string, long first_ts) {
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
 	    series.setName(string);
@@ -84,7 +114,7 @@ public class AllThroughputChart extends Application {
 			
 			while ( line != null ){
 				StringTokenizer st = new StringTokenizer(line);
-				double time = Double.parseDouble(st.nextToken()); 
+				double time = ( Double.parseDouble(st.nextToken()) - first_ts ) /1000.0; 
 				double value = Double.parseDouble(st.nextToken()); 
 				
 				values.add(value);
@@ -113,7 +143,7 @@ public class AllThroughputChart extends Application {
 				while ( line != null ){
 					if(j>=values.size()){break;}
 					StringTokenizer st = new StringTokenizer(line);
-					double time = Double.parseDouble(st.nextToken()); 
+					double time = (Double.parseDouble(st.nextToken()) - first_ts)/1000.0; 
 					double value = Double.parseDouble(st.nextToken()); 
 					
 					values.set(j, value+values.get(j));
@@ -140,7 +170,7 @@ public class AllThroughputChart extends Application {
 	    	
 	}
 
-	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name) {    	
+	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, long first_ts) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
 	    series.setName(name);
@@ -151,14 +181,11 @@ public class AllThroughputChart extends Application {
 			// line format : 0.00 0.301
 			//     n token :   0    1   
 			String line = reader.readLine();
-			int i = 0;
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				double time = Double.parseDouble(st.nextToken()); 
+				long time = (Long.parseLong(st.nextToken()) - first_ts) / 1000; 
 				double value = Double.parseDouble(st.nextToken()); 
-				
-			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
-				
+			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
 			}
 			reader.close();
@@ -179,6 +206,11 @@ public class AllThroughputChart extends Application {
     	args[3] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.34.txt"; 
     	args[4] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.57.txt"; 
     	args[5] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.61.txt"; 
+    	/*	
+    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.1.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.2.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.3.txt"; 
+    	 */
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);

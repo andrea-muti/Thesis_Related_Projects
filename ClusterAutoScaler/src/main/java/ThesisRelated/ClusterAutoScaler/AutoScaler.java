@@ -37,12 +37,19 @@ public class AutoScaler{
 	private double max_throughput_percentage;
 	private HashMap<Integer,Double> max_throughput_levels;
 	private HashMap<Integer,String> node_addresses_map;
+	private int avg_adding_time_sec_real_time;
+	private int avg_cleanup_time_sec_real_time;
+	private int avg_remove_time_sec_real_time;
+	private int avg_adding_time_sec_wl_time;
+	private int avg_cleanup_time_sec_wl_time;
+	private int avg_remove_time_sec_wl_time;
 	
 	String contact_point_address;
 	String jmx_port_number;
 	
 	private int current_node_number;
 	private boolean someone_is_joining;
+	private boolean cleanups_are_running;
 	private boolean someone_is_leaving;
 	
 	public AutoScaler( String autoscaler_properties_path, String predictor_properties_path, 
@@ -61,6 +68,15 @@ public class AutoScaler{
 			e1.printStackTrace();
 			System.exit(0);
 		}
+		
+		this.avg_adding_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_adding_time_sec").trim());
+		this.avg_cleanup_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_cleanup_time_sec").trim());
+		this.avg_remove_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_removing_time_sec").trim());
+		
+		this.avg_adding_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_adding_time_sec_real_time);
+		this.avg_cleanup_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_cleanup_time_sec_real_time);
+		this.avg_remove_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_remove_time_sec_real_time);
+		
 		this.min_num_nodes = Integer.parseInt(properties.getProperty("min_num_nodes").trim());
 		this.max_num_nodes = Integer.parseInt(properties.getProperty("max_num_nodes").trim());
 		this.max_throughput_percentage = Integer.parseInt(properties.getProperty("max_throughput_percentage").trim()) / 100.0;
@@ -118,7 +134,13 @@ public class AutoScaler{
 
 	public void start(){
 		System.out.println(" - [AutoScaler] autoscaler started");
-
+		
+        System.out.println(" - [AutoScaler] 1 minute of real time corresponds to "+(60/this.single_duration_sec)+" minutes of workload time");
+        
+        System.out.println(" - [AutoScaler] avg adding time (wl time) : "+String.format("%.3f", this.avg_adding_time_sec_wl_time/60.0).replace(",", ".")+" min");
+        System.out.println(" - [AutoScaler] avg remove time (wl time) : "+String.format("%.3f", this.avg_remove_time_sec_wl_time/60.0).replace(",", ".")+" min");
+        System.out.println(" - [AutoScaler] avg cleanup time (wl time) : "+String.format("%.3f", this.avg_cleanup_time_sec_wl_time/60.0).replace(",", ".")+" min");
+		
 		String start_date_time = this.convert_ts_to_string_date(this.initial_wl_tstamp);
 		System.out.println(" - [AutoScaler] simulation time starts @ "+start_date_time);
 		
@@ -300,7 +322,7 @@ public class AutoScaler{
         String autoscaler_properties_path = "resources/properties_files/autoscaler.properties";
         String predictor_properties_path = "resources/properties_files/predictor.properties";
         String conf_man_prop_path = "resources/properties_files/propertiesCM.properties";
-        int single_duration_sec = 4; // 1 minuto vero = 15 minuti simulati
+        int single_duration_sec = 12; // 1 minuto vero = 5 minuti simulati
         int scaling_factor = 810; 
         AutoScaler scaler = new AutoScaler( autoscaler_properties_path, predictor_properties_path, 
         							        conf_man_prop_path, single_duration_sec, scaling_factor );

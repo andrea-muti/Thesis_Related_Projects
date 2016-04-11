@@ -1,4 +1,4 @@
-package AllThroughputReader_Visualizer;
+package AllCPUReader_Visualizer;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -24,9 +24,9 @@ import javax.management.remote.JMXServiceURL;
 
 
 
-//legge il throughput anche dei nodi spenti , ovvero 0
+//legge la cpu anche dei nodi spenti , ovvero 0
 
-public class AllThroughputReader {
+public class AllCPUReader {
 	
 	public static void main(String[] args) throws IOException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, AttributeNotFoundException, InterruptedException{
 				
@@ -37,10 +37,10 @@ public class AllThroughputReader {
 		
 
 		// String dir_path = args[1] 
-		String dir_path = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader";
+		String dir_path = "/home/andrea-muti/Scrivania/metrics_java_CPUReader";
 		
     
-    	System.out.println("\n **** CLUSTER NODES Instant Throughput READER ****\n");   	
+    	System.out.println("\n **** CLUSTER NODES CPU READER ****\n");   	
        	String port_number = "7199";  
        	
         List<String> all_nodes = new LinkedList<String>();
@@ -51,10 +51,10 @@ public class AllThroughputReader {
         all_nodes.add("192.168.1.57");
         all_nodes.add("192.168.1.61");
        
-        ThroughputReader[] readers = new ThroughputReader[all_nodes.size()]; 
+        CpuReader[] readers = new CpuReader[all_nodes.size()]; 
         int i = 0;
         for( String ip : all_nodes ){
-			ThroughputReader reader = new ThroughputReader(ip, port_number,  dir_path);
+			CpuReader reader = new CpuReader(ip, port_number,  dir_path);
 			readers[i] = reader;
 			i++;
 		}
@@ -64,72 +64,54 @@ public class AllThroughputReader {
         for(int k = 0; k<1000000000; k++){
         	executor = Executors.newFixedThreadPool(readers.length);
 			for (int j = 0; j < readers.length; j++) {
-				ThroughputReader reader = readers[j];
+				CpuReader reader = readers[j];
 				executor.execute(reader);
 			}
 			Thread.sleep(1000);
         }
     	executor.shutdown();
-		
 		// Wait until all threads are finish
 		while (!executor.isTerminated()) {
 			
 		}
 	}
 	
-//---------------------------------------------------------------------------------------------	
-
-	private static long getReadCount(MBeanServerConnection connection) {
-		long countRead = 0;
-		try{
-			//get an instance of the OperatingSystem Mbean
-			Object osMbean = connection.getAttribute(new ObjectName("org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency"),"Count");
-			long count = (long) osMbean;
-			
-			// usually takes a couple of seconds before we get real values
-		    if (count == -1.0)      return 0;
-		    
-		    // returns a percentage value with 1 decimal point precision
-		    countRead = count;
-		}
-		catch(Exception e){ countRead = 0; }
-		if(countRead<0){countRead=0;}
-		return countRead;
-	}
+	
 	
 //---------------------------------------------------------------------------------------------	
 
-	private static long getWriteCount(MBeanServerConnection connection) {
-		long countRead = 0;
+	private static double getProcessCPULoad(MBeanServerConnection connection) {
+		double processCPUload = 0;
 		try{
 			//get an instance of the OperatingSystem Mbean
-			Object osMbean = connection.getAttribute(new ObjectName("org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency"),"Count");
-			long count = (long) osMbean;
+			Object osMbean = connection.getAttribute(new ObjectName("java.lang:type=OperatingSystem"),"ProcessCpuLoad");
+			double cpuload_value = (double) osMbean;
 			
-			// usually takes a couple of seconds before we get real values
-		    if (count == -1.0)      return 0;
+			// usually takes a couple of seconds bfore we get real values
+		    if (cpuload_value == -1.0)      return 0;
 		    
 		    // returns a percentage value with 1 decimal point precision
-		    countRead = count;
+		    processCPUload = ( (double)(cpuload_value * 1000) / 10.0);
 		}
-		catch(Exception e){ countRead = 0; }
-		if(countRead<0){countRead=0;}
-		return countRead;
+		catch(Exception e){ processCPUload = 0; }
+		
+		String processCPUload_formatted = String.format( "%.3f", processCPUload ).replace(",", ".");
+		return Double.parseDouble(processCPUload_formatted) ;
 	}
-
+	
 //---------------------------------------------------------------------------------------------
 	
-	static class ThroughputReader  implements Runnable{
+	static class CpuReader  implements Runnable{
 		   private String ip_address;
 		   private String port_number;
 		   int samples_count;
 		   int sampling_interval_msec;
 		   BufferedWriter writer;
 		   
-		   ThroughputReader(String ip, String port,  String dir_path){
+		   CpuReader(String ip, String port,  String dir_path){
 		       this.ip_address = ip;
 		       this.port_number = port;
-			   String file_name = dir_path+"/throughput_"+this.ip_address+".txt";
+			   String file_name = dir_path+"/cpu_"+this.ip_address+".txt";
 				try {
 					this.writer = new BufferedWriter(new FileWriter(file_name, true));		
 				} catch (IOException e) {
@@ -147,13 +129,12 @@ public class AllThroughputReader {
 				try {
 					url = new JMXServiceURL(serviceURL);
 				} catch (MalformedURLException e2) {
-					e2.printStackTrace();
+					//e2.printStackTrace();
 				}
 		  		
 		  		JMXConnector jmxc = null;
 
-		  		double countRD = 0;
-		  		double countWR = 0;
+		  		
 		  		MBeanServerConnection connection = null;
 		  	
 	  			try{
@@ -162,27 +143,15 @@ public class AllThroughputReader {
 	  				connection = jmxc.getMBeanServerConnection();
 	  				
 	  				// è vivo
-	  				
-	  				long startcountrd = System.currentTimeMillis();
-		  			double readCountstart = getReadCount(connection);
-		  			long startcountwr = System.currentTimeMillis();
-		  			double writeCountstart = getWriteCount(connection);
-		  			Thread.sleep(1000);
-		  			double readCountend = getReadCount(connection);
-		  			long endcountrd = System.currentTimeMillis();
-		  			double writeCountend = getWriteCount(connection);
-		  			long endcountwr = System.currentTimeMillis();
-		  			 
-		  			countRD = (readCountend - readCountstart) / ((endcountrd - startcountrd)/1000);
-		  			countWR = (writeCountend - writeCountstart) / ((endcountwr - startcountwr)/1000); 
-		  		  	
-		  			if(countRD<0){countRD=0;}
-		  			if(countWR<0){countWR=0;}
+	  			
+		  			double cpu_level_sample1 = getProcessCPULoad(connection);
 		  			
-		  			double throughput_total = countRD + countWR;
+
+		  			
+		  			double cpu_level = ( cpu_level_sample1 ) ;
 		  			
 		  			try {
-		  				String content = System.currentTimeMillis() + " " + throughput_total;
+		  				String content = System.currentTimeMillis() + " " + cpu_level;
 		  				writer.append(content+"\n");	
 		  				writer.flush();
 		  			}

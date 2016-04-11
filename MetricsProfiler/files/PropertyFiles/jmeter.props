@@ -1,10 +1,10 @@
 #updated 
-#Wed Mar 16 15:38:18 CET 2016
+#Mon Apr 11 11:31:22 CEST 2016
 jmxFile=/home/andrea-muti/cassandra_jmeter_plans/no_timestamp_timer/cassandra_constant_rate_read_only.jmx
 timeoutJMeterSlaves=60
 java_rmi_server_hostname=192.168.1.6
 jmeter_slaves_IPs=192.168.2.119,192.168.2.119\:1100,192.168.1.113,192.168.1.116,192.168.0.133
-rate=102000
+rate=80000
 noGui=true
 testDuration=3000
 rampDuration=10
