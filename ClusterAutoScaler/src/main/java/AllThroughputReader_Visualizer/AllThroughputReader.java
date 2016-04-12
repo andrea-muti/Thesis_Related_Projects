@@ -61,8 +61,9 @@ public class AllThroughputReader {
         System.out.println("");
         
         ExecutorService executor = null;
+        executor = Executors.newFixedThreadPool(readers.length);
         for(int k = 0; k<1000000000; k++){
-        	executor = Executors.newFixedThreadPool(readers.length);
+        	
 			for (int j = 0; j < readers.length; j++) {
 				ThroughputReader reader = readers[j];
 				executor.execute(reader);

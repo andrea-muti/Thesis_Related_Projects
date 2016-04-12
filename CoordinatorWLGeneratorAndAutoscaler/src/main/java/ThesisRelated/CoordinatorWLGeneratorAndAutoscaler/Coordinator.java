@@ -20,9 +20,11 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
+        int number_hour_initial_shift = 6;
+        
         final  CountDownLatch latch = new CountDownLatch(1);
-        Thread generatorModule = new Thread(new GeneratorExecutorThread(latch));
-        Thread autoscalerModule = new Thread(new AutoscalerExecutorThread(latch));
+        Thread generatorModule = new Thread(new GeneratorExecutorThread(latch, number_hour_initial_shift));
+        Thread autoscalerModule = new Thread(new AutoscalerExecutorThread(latch, number_hour_initial_shift));
 
         try{Thread.sleep(4000);}
         catch(Exception e){}
@@ -36,7 +38,9 @@ public class Coordinator {
         System.out.println("");
         
         latch.countDown();  // solo dopo che il latch è andato a 0 i due thread partiranno davvero
-     
+        
+       
+        
      }
 }
 
@@ -48,19 +52,20 @@ public class Coordinator {
 class GeneratorExecutorThread implements Runnable{
     private final CountDownLatch latch;
     private WorkloadGenerator generator;
+    private int number_hours_initial_shift;
  
     // reading various required properties
     String generator_properties_path = "files/properties_files/generator.props";   
     String jmeter_properties_path = "files/properties_files/jmeter.props";
      
-    public GeneratorExecutorThread(CountDownLatch latch){
+    public GeneratorExecutorThread(CountDownLatch latch, int number_hours_initial_shift){
         this.latch = latch;
-        
+        this.number_hours_initial_shift=number_hours_initial_shift;
         this.generator = new WorkloadGenerator(generator_properties_path, jmeter_properties_path);
         
         // creazione del JMeter execution plan che verrà usato dal JMRunner (JMeterController)
         System.out.print(" - [WorkloadGenerator Executor] generation JMeter execution plan : ");
-    	boolean plan_creation = generator.generate_jmeter_plan();
+    	boolean plan_creation = generator.generate_jmeter_plan_with_initial_shift(this.number_hours_initial_shift);
         if(!plan_creation){
         	System.err.println(" FAILED");
         	System.exit(0);
@@ -68,12 +73,14 @@ class GeneratorExecutorThread implements Runnable{
         else{System.out.println(" DONE"); }
         
         System.out.println(" - [WorkloadGenerator Executor] WorkloadGenerator initialized");
-        long approx_total_dur_sec = generator.get_avg_workload_duration_sec();
+        System.out.println(" - [WorkloadGenerator Executor] start of generated workload will be shifted by "+this.number_hours_initial_shift+" hours with respect to the workload file");
+        long approx_total_dur_sec = generator.get_avg_workload_duration_sec() - ((60*this.number_hours_initial_shift)*generator.get_single_duration_sec());
         double approx_dur_min = approx_total_dur_sec/60.0;
         String form_dur_min = String.format("%.0f", approx_dur_min);
+        String form_dur_hours = String.format("%.2f", approx_dur_min/60.0).replace(",", ".");
         System.out.println(" - [WorkloadGenerator Executor] 1 minute of workload will be generated in "+generator.get_single_duration_sec()+" sec of real time");
         System.out.println(" - [WorkloadGenerator Executor] 1 minute of real time corresponds to "+(60/generator.get_single_duration_sec())+" minutes of workload time");
-        System.out.println(" - [WorkloadGenerator Executor] total approx. simulation duration: "+form_dur_min+" min ("+approx_total_dur_sec+" sec)");
+        System.out.println(" - [WorkloadGenerator Executor] total approx. simulation duration: "+form_dur_min+" min ("+approx_total_dur_sec+" sec) ("+form_dur_hours+" hours)");
     }
  
     @Override
@@ -104,18 +111,20 @@ class AutoscalerExecutorThread implements Runnable{
     private AutoScaler autoscaler;
     private int single_duration_sec;
     private int scaling_factor;
+    private int number_hours_initial_shift;
     
     String autoscaler_props_file = "files/properties_files/autoscaler.properties";
     String predictor_props_file = "files/properties_files/predictor.properties";
     String generator_pros_file = "files/properties_files/generator.props";
     String configuration_manager_props_file = "files/properties_files/propertiesCM.properties";
     
-    public AutoscalerExecutorThread(CountDownLatch latch){
+    public AutoscalerExecutorThread(CountDownLatch latch,  int number_hours_initial_shift){
+    	this.number_hours_initial_shift=number_hours_initial_shift;
         this.latch = latch;
     	this.single_duration_sec = get_single_duration_sec();
     	this.scaling_factor = get_scaling_factor();
-        this.autoscaler = new AutoScaler( autoscaler_props_file, predictor_props_file, 
-        			configuration_manager_props_file,  this.single_duration_sec, this.scaling_factor);
+        this.autoscaler = new AutoScaler( autoscaler_props_file, predictor_props_file, configuration_manager_props_file,
+        		this.single_duration_sec,  this.scaling_factor, this.number_hours_initial_shift);
         System.out.println(" - [AutoScaler Executor] AutoScaler initialized");
     }
  

@@ -95,6 +95,14 @@ public class WorkloadGenerator {
 		 return result;
 	}
 	
+	public boolean generate_jmeter_plan_with_initial_shift(int n_hours){
+		 JMeterPlanCreator plan_creator = new JMeterPlanCreator(workload_file_path, csv_separator, 
+					has_headers, single_duration_sec, num_jmeter_slaves, workload_scaling_factor, n_hours);
+		 boolean result = plan_creator.create_plan_and_save_on_file(jmeter_plan_path);
+		 this.is_plan_generated=result;
+		 return result;
+	}
+	
 	public void generateWorkload(){
 		if(!this.is_plan_generated){
 			System.err.println(" - [WorkloadGenerator] ERROR : workload cannot be executed since the jmeter plan has not been generated successfully");

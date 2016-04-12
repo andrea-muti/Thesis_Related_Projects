@@ -27,11 +27,29 @@ public class JMeterPlanCreator {
 	private int single_duration_sec;
 	private int number_of_jmeter_slaves;
 	private int scaling_factor;
+	private int n_hours_initial_shift;
 	
-	// public constructor
+	/** public constructor
+	 * 		- initial shift = 0 by default, therefore the generated plan corresponds to the WHOLE workload
+	**/
 	public JMeterPlanCreator( String workload_csv_file_path, String separator, boolean has_headers, 
 							  int single_duration_sec, int num_jmeter_slaves, int scaling_factor ){
-		
+		this(workload_csv_file_path, separator, has_headers, single_duration_sec, num_jmeter_slaves, scaling_factor, 0);
+	}
+	
+	/** public constructor
+	 * 
+	 * @param workload_csv_file_path : workload file path
+	 * @param separator	: separators for the fields in the workload file path
+	 * @param has_headers : whether or not the csv workload file has headers on the first line
+	 * @param single_duration_sec : real time duration in secs of each workload line (that corresponds to 1 minute)
+	 * @param num_jmeter_slaves : number of jmeter slaves that will execute the workload
+	 * @param scaling_factor : scaling factor applied to the workload intensity
+	 * @param n_hours_initial_shift : number of hours the generated plan will be shifted forward wrt the workload file
+	 */
+	public JMeterPlanCreator( String workload_csv_file_path, String separator, boolean has_headers, 
+								  int single_duration_sec, int num_jmeter_slaves, int scaling_factor, int n_hours_initial_shift ){
+			
 		this.filepath 	   = workload_csv_file_path; 
 		this.separator	   = separator;
 		this.has_headers   = has_headers;
@@ -39,8 +57,9 @@ public class JMeterPlanCreator {
 		this.single_duration_sec = single_duration_sec;
 		this.number_of_jmeter_slaves = num_jmeter_slaves;
 		this.scaling_factor = scaling_factor;
-		
-	}
+		this.n_hours_initial_shift=n_hours_initial_shift;
+			
+		}
 	
 	
 	
@@ -116,6 +135,11 @@ public class JMeterPlanCreator {
 			
 			// se c'è l'header lo salto
 			if( this.has_headers ){ reader.readLine(); }
+			
+			// devo saltare un numbero di righe pari al numbero di minuti corrispondenti al n_hours_initial_shift
+			for(int i = 0; i<60*this.n_hours_initial_shift; i++){
+				reader.readLine();
+			}
 			
 			String line = reader.readLine();
 			while(line!=null){

@@ -8,7 +8,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.TimeZone;
 
 import ThesisRelated.ClusterConfigurationManager.ConfigurationManager;
 import ThesisRelated.ClusterWorkloadPredictor.ClusterWorkloadPredictor;
@@ -31,6 +30,7 @@ public class AutoScaler{
 	private WorkloadTimeTracker time_tracker;
 	private int single_duration_sec;
 	private int scaling_factor;
+	private int number_hours_initial_shift;
 	private long initial_wl_tstamp;
 	private int min_num_nodes;
 	private int max_num_nodes;
@@ -53,8 +53,17 @@ public class AutoScaler{
 	private boolean someone_is_leaving;
 	
 	public AutoScaler( String autoscaler_properties_path, String predictor_properties_path, 
-					   String config_man_properties_path, int single_duration_sec, int scaling_factor ){
-
+			   String config_man_properties_path, int single_duration_sec, int scaling_factor){
+		this(autoscaler_properties_path, predictor_properties_path, config_man_properties_path, single_duration_sec, scaling_factor, 0);
+		
+	}
+	
+	
+	public AutoScaler( String autoscaler_properties_path, String predictor_properties_path, 
+					   String config_man_properties_path, int single_duration_sec, int scaling_factor, int number_hours_initial_shift ){
+		
+		this.number_hours_initial_shift = number_hours_initial_shift;
+		
 		this.single_duration_sec = single_duration_sec;
 		this.scaling_factor = scaling_factor;
 		
@@ -129,30 +138,29 @@ public class AutoScaler{
 		check_min_node_number_for_the_experiment(this.current_node_number);
 		System.out.println(" - [AutoScaler] there are "+this.current_node_number+" nodes in the cluster");
 		
+		System.out.println(" - [AutoScaler] 1 minute of real time corresponds to "+(60/this.single_duration_sec)+" minutes of workload time");
+        System.out.println(" - [AutoScaler] avg adding time (wl time) : "+String.format("%.3f", this.avg_adding_time_sec_wl_time/60.0).replace(",", ".")+" min");
+        System.out.println(" - [AutoScaler] avg remove time (wl time) : "+String.format("%.3f", this.avg_remove_time_sec_wl_time/60.0).replace(",", ".")+" min");
+        System.out.println(" - [AutoScaler] avg cleanup time (wl time) : "+String.format("%.3f", this.avg_cleanup_time_sec_wl_time/60.0).replace(",", ".")+" min");
+
 	}
 	
 
 	public void start(){
 		System.out.println(" - [AutoScaler] autoscaler started");
 		
-        System.out.println(" - [AutoScaler] 1 minute of real time corresponds to "+(60/this.single_duration_sec)+" minutes of workload time");
-        
-        System.out.println(" - [AutoScaler] avg adding time (wl time) : "+String.format("%.3f", this.avg_adding_time_sec_wl_time/60.0).replace(",", ".")+" min");
-        System.out.println(" - [AutoScaler] avg remove time (wl time) : "+String.format("%.3f", this.avg_remove_time_sec_wl_time/60.0).replace(",", ".")+" min");
-        System.out.println(" - [AutoScaler] avg cleanup time (wl time) : "+String.format("%.3f", this.avg_cleanup_time_sec_wl_time/60.0).replace(",", ".")+" min");
+		String start_date_time = this.convert_ts_to_string_date(this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000));
+		System.out.print(" - [AutoScaler] simulation time starts @ "+start_date_time);
+		if(this.number_hours_initial_shift==0){System.out.println();}
+		else{System.out.println(" (shifted by "+this.number_hours_initial_shift+" hours wrt the real workload starting time)");}
 		
-		String start_date_time = this.convert_ts_to_string_date(this.initial_wl_tstamp);
-		System.out.println(" - [AutoScaler] simulation time starts @ "+start_date_time);
-		
-		this.time_tracker.start();
-		System.out.println(" - [AutoScaler] time_tracker started [using single_duration_sec:"+this.single_duration_sec+"]");
+		this.time_tracker.start(); 
+		System.out.println(" - [AutoScaler] time_tracker started [ using single_duration_sec:"+this.single_duration_sec+" ]");
 			
 		double[] future_loads = new double[4];
 		
-		int n_sec_between_sampling = 30; // secondi di real time --> che corrispondono a 30/2=15 min di WL time
-										 	
-		// SHIFT IN AVANTI DELLA SIMULAZIONE [ ATTENZIONE!!! ]
-		//this.initial_wl_tstamp = this.initial_wl_tstamp + 1000*60*60*8; 
+		int n_sec_between_sampling = 30; // secondi di real time --> che corrispondono a 5/2=2.5 min di WL time
+										 
 		
 		// TODO : invece che un for dovrebbe essere un while, 
 		// che si ferma quando qualcuno chiede di stoppare l'autoscaler
@@ -162,7 +170,7 @@ public class AutoScaler{
 			double real_elapsed_min = (i*n_sec_between_sampling)/60.0;
 			System.out.print("\n - [AutoScaler] real time elapsed: "+real_elapsed_min+" min --> WL time elapsed: "+elapsed_min+" min");
 			
-			long wl_now_ts = this.initial_wl_tstamp + (1000*elapsed_sec);
+			long wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
 			long wl_next_15min_ts = wl_now_ts + FIFTEEN_MIN;
 			long wl_next_half_hour_ts = wl_now_ts + HALF_HOUR;
 			long wl_next_hour_ts = wl_now_ts + ONE_HOUR;
@@ -196,8 +204,6 @@ public class AutoScaler{
 	
 	private void execute_scaling_action(ScalingAction action){
 		System.out.println(" - [AutoScaler] scaling decision [for the next hour]: "+action.format_as_printable_message(this.current_node_number));
-		
-		String ip_address="the_ip_of_the_node_to_remove";
 		
 		if(!action.getAction().equals(AutoScaleConstants.KEEP_CURRENT)){
 			String s="";
@@ -249,7 +255,7 @@ public class AutoScaler{
 		int required_one_hour = this.compute_required_node_number(next_hour_predicted_load);
 		
 		String wl_now_date = convert_ts_to_string_date(wl_now_ts);
-		System.out.println("\n - [AutoScaler] workload time "+wl_now_date+"");
+		System.out.println("\n - [AutoScaler] workload time : " + wl_now_date);
 		System.out.println("       - predicted current load    : "+current_predicted_load+" req/sec | num nodes required : "+required_now);
 		System.out.println("       - predicted next 15min load : "+next_15min_predicted_load+" req/sec | num nodes required : "+required_15min);
 		System.out.println("       - predicted next 30min load : "+next_half_hour_predicted_load+" req/sec | num nodes required : "+required_half_hour);
@@ -268,8 +274,6 @@ public class AutoScaler{
 		else{ // KEEP CURRENT
 			action = new ScalingAction(AutoScaleConstants.KEEP_CURRENT, 0);
 		}
-		
-	
 		return action;
 		
 	}
