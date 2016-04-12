@@ -110,8 +110,8 @@ public class WorkloadGenerator {
 		}
 	
         
-        for(int i=0; i<30; i++){
-			System.out.println("     - CARICO CARICO CARICO CARICO");
+        for(int i=0; i<30000; i++){
+			System.out.println("\n     #@#@#@# [print di test] WORKLOAD GENERATOR STA GENERANDO CARICO #@#@#@#@# \n");
 			try{ Thread.sleep(10*1000);}
 			catch(Exception e){}
 		}

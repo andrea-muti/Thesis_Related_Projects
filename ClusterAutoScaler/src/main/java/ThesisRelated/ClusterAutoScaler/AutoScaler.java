@@ -161,13 +161,14 @@ public class AutoScaler{
 		
 		int n_sec_between_sampling = 30; // secondi di real time --> che corrispondono a 5/2=2.5 min di WL time
 										 
+		long start_ts = System.currentTimeMillis();
 		
 		// TODO : invece che un for dovrebbe essere un while, 
 		// che si ferma quando qualcuno chiede di stoppare l'autoscaler
 		for(int i = 0; i<20000;i++){	
 			long elapsed_sec = (long) time_tracker.getElapsed();
 			double elapsed_min = Double.parseDouble(String.format("%.3f", elapsed_sec/60.0).replace(",", "."));
-			double real_elapsed_min = (i*n_sec_between_sampling)/60.0;
+			double real_elapsed_min = Double.parseDouble(String.format("%.2f", (((System.currentTimeMillis() - start_ts)/1000.0)/60.0)).replace(",", "."));
 			System.out.print("\n - [AutoScaler] real time elapsed: "+real_elapsed_min+" min --> WL time elapsed: "+elapsed_min+" min");
 			
 			long wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);

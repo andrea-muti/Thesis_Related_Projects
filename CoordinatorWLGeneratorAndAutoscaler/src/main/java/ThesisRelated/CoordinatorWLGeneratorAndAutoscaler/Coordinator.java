@@ -20,7 +20,7 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
-        int number_hour_initial_shift = 6;
+        int number_hour_initial_shift = 8;
         
         final  CountDownLatch latch = new CountDownLatch(1);
         Thread generatorModule = new Thread(new GeneratorExecutorThread(latch, number_hour_initial_shift));

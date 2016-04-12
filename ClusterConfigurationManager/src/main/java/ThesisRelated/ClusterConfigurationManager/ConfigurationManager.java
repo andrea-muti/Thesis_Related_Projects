@@ -591,7 +591,7 @@ public class ConfigurationManager {
 		boolean result = true;
 		String addr_node_to_add = ip_address+":"+jmx_port;
 		System.out.print("         [ConfigurationManager] - FAKE ADD NODE "+addr_node_to_add+" : ");
-		try{Thread.sleep(4000);}
+		try{Thread.sleep(6000);}
 		catch(Exception e){}
 		System.out.println("DONE");
 		return result;
@@ -600,7 +600,7 @@ public class ConfigurationManager {
 		boolean result = true;
 		String addr_node_to_remove = ip_address+":"+jmx_port;
 		System.out.print("         [ConfigurationManager] - FAKE REMOVE NODE "+addr_node_to_remove+" : ");
-		try{Thread.sleep(2000);}
+		try{Thread.sleep(6000);}
 		catch(Exception e){}
 		System.out.println("DONE");
 		return result;
