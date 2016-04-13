@@ -590,8 +590,8 @@ public class ConfigurationManager {
 	public boolean fake_addNode(String ip_address, String jmx_port){
 		boolean result = true;
 		String addr_node_to_add = ip_address+":"+jmx_port;
-		System.out.print("         [ConfigurationManager] - FAKE ADD NODE "+addr_node_to_add+" : ");
-		try{Thread.sleep(6000);}
+		System.out.print("         [ConfigurationManager] - FAKE ADD NODE "+addr_node_to_add+" (durata stimata 150 sec of RT): ");
+		try{Thread.sleep(150*1000);}
 		catch(Exception e){}
 		System.out.println("DONE");
 		return result;
@@ -599,8 +599,8 @@ public class ConfigurationManager {
 	public boolean fake_removeNode(String ip_address, String jmx_port){
 		boolean result = true;
 		String addr_node_to_remove = ip_address+":"+jmx_port;
-		System.out.print("         [ConfigurationManager] - FAKE REMOVE NODE "+addr_node_to_remove+" : ");
-		try{Thread.sleep(6000);}
+		System.out.print("         [ConfigurationManager] - FAKE REMOVE NODE "+addr_node_to_remove+" (durata stimata 280 sec of RT): ");
+		try{Thread.sleep(280*1000);}
 		catch(Exception e){}
 		System.out.println("DONE");
 		return result;
