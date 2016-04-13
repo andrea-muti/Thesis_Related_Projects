@@ -1,4 +1,4 @@
-package AllCPUReader_Visualizer;
+package node_number_monitor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,15 +10,16 @@ import java.util.StringTokenizer;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
 
-// versione modificata per l'all cpu reader
-
-public class AllCpuChart extends Application {
+public class NodeNumberChart extends Application {
+	
+	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
+	double single_duration_sec = 12.0;
 
     @Override public void start(Stage stage) {
 
@@ -36,33 +37,31 @@ public class AllCpuChart extends Application {
     	}
 	    
     
-        stage.setTitle("CPU Over Time");
+        stage.setTitle("Number of Nodes in the Cluster Over Time");
 
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [seconds]");
-        xAxis.setTickUnit(10);
-		yAxis.setLabel("CPU Utilization [ % ]");
+        xAxis.setLabel("Time [min]");
+        xAxis.setTickUnit(1);
+		yAxis.setLabel("Number Of Nodes");
+		yAxis.setTickUnit(1);
+		
 
-        final AreaChart<Number,Number> lineChart = new AreaChart<Number,Number>(xAxis,yAxis);
+        final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("CPU over Time");
+        lineChart.setTitle("Number of Nodes in the Cluster Over Time");
         lineChart.setCreateSymbols(false);  
         
         long first_ts = get_first_ts(file_paths);
         System.out.println("\n * first min ts : "+first_ts);
         
-        add_line_to_chart(lineChart, file_paths.get(0), "vm0", first_ts);
-        add_line_to_chart(lineChart, file_paths.get(1), "vm1", first_ts);
-        add_line_to_chart(lineChart, file_paths.get(2), "vm2", first_ts);
-        add_line_to_chart(lineChart, file_paths.get(3), "vm3", first_ts);
-        add_line_to_chart(lineChart, file_paths.get(4), "vm4", first_ts);
-        add_line_to_chart(lineChart, file_paths.get(5), "vm5", first_ts);
+        add_line_to_chart(lineChart, file_paths.get(0), "number of nodes", first_ts);
         
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     
@@ -92,7 +91,7 @@ public class AllCpuChart extends Application {
 		return primi_ts[0];
 	}
 
-	private void add_line_to_chart(AreaChart<Number, Number> lineChart, String file_path, String name, long first_ts) {    	
+	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, long first_ts) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
 	    series.setName(name);
@@ -105,12 +104,11 @@ public class AllCpuChart extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				long time = (Long.parseLong(st.nextToken()) - first_ts) / 1000; 
-				double value = Double.parseDouble(st.nextToken()); 
+				long time = (long) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
+				System.out.println(time);
+				int value = Integer.parseInt(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
-				line = reader.readLine();
-				
 			}
 			reader.close();
 			lineChart.getData().add(series);
@@ -123,14 +121,9 @@ public class AllCpuChart extends Application {
 
 
     public static void main(String[] args) {
-    	args = new String[6];
-    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.0.169.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.0.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.7.txt"; 
-    	args[3] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.34.txt"; 
-    	args[4] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.57.txt"; 
-    	args[5] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.61.txt"; 
-    	
+    	args = new String[1];
+    	args[0] = "/home/andrea-muti/Scrivania/cluster_node_number.txt"; 
+
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);

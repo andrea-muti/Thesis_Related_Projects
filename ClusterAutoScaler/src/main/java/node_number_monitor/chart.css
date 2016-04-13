@@ -1,0 +1,25 @@
+/** file: chart.css
+  */
+  
+.chart {
+    -fx-background-color: white;
+}
+.chart-plot-background {
+    -fx-background-color: white;
+}
+
+.default-color0.chart-series-line {
+  -fx-stroke: red;
+}
+ 
+.default-color1.chart-series-line {
+  -fx-stroke: blue;
+}
+
+.default-color0.chart-line-symbol {
+  -fx-background-color: red;
+}
+ 
+.default-color1.chart-line-symbol {
+  -fx-background-color: blue;
+}

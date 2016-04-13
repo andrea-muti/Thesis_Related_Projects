@@ -7,6 +7,7 @@ public class CalcolatoreTempiScalingActions {
 	
 	
 	// ciò che viene fatto nel main in realtà deve essere fatto dal decider
+	@SuppressWarnings("unused")
 	public static void main(String[] args){
 		
 		int t_add = 12;
