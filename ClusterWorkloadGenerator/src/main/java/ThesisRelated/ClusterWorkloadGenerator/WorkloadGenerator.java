@@ -36,6 +36,8 @@ public class WorkloadGenerator {
 	private  int workload_scaling_factor ;
 	private boolean is_plan_generated;
 	private long avg_workload_duration_sec;
+	private JMRunner jrunner;
+	private boolean execute=false;
 	
 	/** WorkloadGenerator
 	 * 		public constructor
@@ -66,8 +68,8 @@ public class WorkloadGenerator {
         // invoca a sua volta il costruttore del JMeterController che invoca la
         // kill_and_restart_jmeter_slaves() che richiede del tempo per essere eseguita
         // siccome nel coordinator ho il latch tra il costruttore del generator e la runWorkload()
-        // sono sicuro che se quando invoco la runWorkload() i jmeter-slaves sono stati restarted
-        JMRunner jrunner = new JMRunner(this.jmeter_props_file);
+        // sono sicuro che quando invoco la runWorkload() i jmeter-slaves sono stati restarted
+        this.jrunner = new JMRunner(this.jmeter_props_file);
 	}
 	
 
@@ -108,17 +110,21 @@ public class WorkloadGenerator {
 			System.err.println(" - [WorkloadGenerator] ERROR : workload cannot be executed since the jmeter plan has not been generated successfully");
 			return ;
 		}
-	
-        
+		
+		
+        this.execute=true;
         for(int i=0; i<30000; i++){
 			System.out.println("\n     #@#@#@# [print di test] WORKLOAD GENERATOR STA GENERANDO CARICO #@#@#@#@# \n");
 			try{ Thread.sleep(10*1000);}
 			catch(Exception e){}
 		}
         
-        /*
-        jrunner.runWorkload();
         
+        //this.jrunner.runWorkload();
+        
+        this.execute=false;
+        
+        /*
         // wait until termination of workload execution
         // non dovrei mai entrare in questo while, ma ce lo lasciamo per sicurezza
         while(jrunner.isRunning()){
