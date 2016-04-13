@@ -23,8 +23,10 @@ public class Coordinator {
         int number_hour_initial_shift = 8;
         
         final  CountDownLatch latch = new CountDownLatch(1);
-        Thread generatorModule = new Thread(new GeneratorExecutorThread(latch, number_hour_initial_shift));
-        Thread autoscalerModule = new Thread(new AutoscalerExecutorThread(latch, number_hour_initial_shift));
+        GeneratorExecutorRunnable generatorExecutor = new GeneratorExecutorRunnable(latch, number_hour_initial_shift);
+        AutoscalerExecutorRunnable autoscalerExecutor = new AutoscalerExecutorRunnable(latch, number_hour_initial_shift);
+        Thread generatorModule = new Thread(generatorExecutor);
+        Thread autoscalerModule = new Thread(autoscalerExecutor);
 
         try{Thread.sleep(4000);}
         catch(Exception e){}
@@ -40,7 +42,6 @@ public class Coordinator {
         latch.countDown();  // solo dopo che il latch è andato a 0 i due thread partiranno davvero
         
        
-        
      }
 }
 
@@ -49,7 +50,7 @@ public class Coordinator {
 /**
  * Executor Thread for the WORKLOAD GENERATOR
  */
-class GeneratorExecutorThread implements Runnable{
+class GeneratorExecutorRunnable implements Runnable{
     private final CountDownLatch latch;
     private WorkloadGenerator generator;
     private int number_hours_initial_shift;
@@ -58,7 +59,7 @@ class GeneratorExecutorThread implements Runnable{
     String generator_properties_path = "files/properties_files/generator.props";   
     String jmeter_properties_path = "files/properties_files/jmeter.props";
      
-    public GeneratorExecutorThread(CountDownLatch latch, int number_hours_initial_shift){
+    public GeneratorExecutorRunnable(CountDownLatch latch, int number_hours_initial_shift){
         this.latch = latch;
         this.number_hours_initial_shift=number_hours_initial_shift;
         this.generator = new WorkloadGenerator(generator_properties_path, jmeter_properties_path);
@@ -105,7 +106,7 @@ class GeneratorExecutorThread implements Runnable{
 /**
  * Executor Thread for the AUTOSCALER
  */
-class AutoscalerExecutorThread implements Runnable{
+class AutoscalerExecutorRunnable implements Runnable{
 	
     private final CountDownLatch latch;
     private AutoScaler autoscaler;
@@ -118,7 +119,7 @@ class AutoscalerExecutorThread implements Runnable{
     String generator_pros_file = "files/properties_files/generator.props";
     String configuration_manager_props_file = "files/properties_files/propertiesCM.properties";
     
-    public AutoscalerExecutorThread(CountDownLatch latch,  int number_hours_initial_shift){
+    public AutoscalerExecutorRunnable(CountDownLatch latch,  int number_hours_initial_shift){
     	this.number_hours_initial_shift=number_hours_initial_shift;
         this.latch = latch;
     	this.single_duration_sec = get_single_duration_sec();
@@ -166,4 +167,11 @@ class AutoscalerExecutorThread implements Runnable{
 		}		
 		return Integer.parseInt(properties.getProperty("scaling_factor").trim());
     }
+    
+    public void terminate(){
+    	this.autoscaler.stop();
+    	System.out.println(" - [AutoScaler Executor] AutoScaler terminated");
+    	Thread.currentThread().interrupt();
+    }
+
 }
