@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import ThesisRelated.ClusterWorkloadGenerator.WorkloadGenerator;
+import node_number_monitor.NodeNumberMonitor;
 import ThesisRelated.ClusterAutoScaler.AutoScaler;
 
 /**
@@ -20,23 +21,30 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
-        int number_hour_initial_shift = 8;
+        int number_hour_initial_shift = 18;
+        String contact_point = "192.168.0.169";
+        String jmx_port = "7199";
+        String result_dir_path = "/home/andrea-muti/Scrivania/";
         
         final  CountDownLatch latch = new CountDownLatch(1);
         GeneratorExecutorRunnable generatorExecutor = new GeneratorExecutorRunnable(latch, number_hour_initial_shift);
         AutoscalerExecutorRunnable autoscalerExecutor = new AutoscalerExecutorRunnable(latch, number_hour_initial_shift);
+        NumberMonitorRunnable numberMonitorExeutor = new NumberMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
+        
         Thread generatorModule = new Thread(generatorExecutor);
         Thread autoscalerModule = new Thread(autoscalerExecutor);
-
-        try{Thread.sleep(4000);}
-        catch(Exception e){}
+        Thread numberMonitor = new Thread(numberMonitorExeutor);
+        
+        try{ Thread.sleep(4000); }
+        catch( Exception e ){}
         System.out.println("");
 
         generatorModule.start();
         autoscalerModule.start();
-
-        try{Thread.sleep(4000);}
-        catch(Exception e){}
+        numberMonitor.start();
+        
+        try{ Thread.sleep(4000); }
+        catch( Exception e ){}
         System.out.println("");
         
         latch.countDown();  // solo dopo che il latch è andato a 0 i due thread partiranno davvero
@@ -44,6 +52,35 @@ public class Coordinator {
        
      }
 }
+class NumberMonitorRunnable implements Runnable{
+	
+	private final CountDownLatch latch;
+    private NodeNumberMonitor monitor;
+	
+	public NumberMonitorRunnable(CountDownLatch latch, String contact_point, String jmx_port, String result_dir_path){
+		this.latch=latch;
+		this.monitor=new NodeNumberMonitor(contact_point, jmx_port, result_dir_path);
+	}
+
+	@Override
+	public void run() {
+		try {
+        	System.out.println(" - [NodeNumberMonitor Executor] NodeNumberMonitor awaiting start");
+            latch.await();          //The thread keeps waiting till it is informed
+        } catch (InterruptedException e) {
+        	System.err.println(" - [NodeNumberMonitor Executor] NodeNumberMonitor thread awaiting to start has been interrupet");
+            e.printStackTrace();
+            System.err.println(" - [NodeNumberMonitor Executor] ABORTING EXECUTION");
+            System.exit(0);
+        }
+        System.out.println(" - [NodeNumberMonitor Executor] start monitoring the number of nodes");
+        this.monitor.start_monitor();
+        System.out.println(" - [NodeNumberMonitor Executor] stop monitoring the number of nodes");
+	}
+	
+}
+
+
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -56,8 +93,8 @@ class GeneratorExecutorRunnable implements Runnable{
     private int number_hours_initial_shift;
  
     // reading various required properties
-    String generator_properties_path = "files/properties_files/generator.props";   
-    String jmeter_properties_path = "files/properties_files/jmeter.props";
+    String generator_properties_path = "resources/properties_files/generator.props";   
+    String jmeter_properties_path = "resources/properties_files/jmeter.props";
      
     public GeneratorExecutorRunnable(CountDownLatch latch, int number_hours_initial_shift){
         this.latch = latch;
@@ -114,10 +151,10 @@ class AutoscalerExecutorRunnable implements Runnable{
     private int scaling_factor;
     private int number_hours_initial_shift;
     
-    String autoscaler_props_file = "files/properties_files/autoscaler.properties";
-    String predictor_props_file = "files/properties_files/predictor.properties";
-    String generator_pros_file = "files/properties_files/generator.props";
-    String configuration_manager_props_file = "files/properties_files/propertiesCM.properties";
+    String autoscaler_props_file = "resources/properties_files/autoscaler.properties";
+    String predictor_props_file = "resources/properties_files/predictor.properties";
+    String generator_pros_file = "resources/properties_files/generator.props";
+    String configuration_manager_props_file = "resources/properties_files/propertiesCM.properties";
     
     public AutoscalerExecutorRunnable(CountDownLatch latch,  int number_hours_initial_shift){
     	this.number_hours_initial_shift=number_hours_initial_shift;
