@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import ThesisRelated.ClusterConfigurationManager.ConfigurationManager;
 import ThesisRelated.ClusterWorkloadPredictor.ClusterWorkloadPredictor;
@@ -37,10 +37,10 @@ public class AutoScaler{
 	private HashMap<Integer,String> node_addresses_map;
 	private int avg_adding_time_sec_real_time;
 	private int avg_cleanup_time_sec_real_time;
-	private int avg_remove_time_sec_real_time;
+	private HashMap<Integer,Integer> avg_remove_time_sec_real_time_map;
 	private int avg_adding_time_sec_wl_time;
 	private int avg_cleanup_time_sec_wl_time;
-	private int avg_remove_time_sec_wl_time;
+	private HashMap<Integer,Integer> avg_remove_times_sec_wl_time_map;
 	
 	String contact_point_address;
 	String jmx_port_number;
@@ -76,16 +76,28 @@ public class AutoScaler{
 			System.exit(0);
 		}
 		
+
+		this.min_num_nodes = Integer.parseInt(properties.getProperty("min_num_nodes").trim());
+		this.max_num_nodes = Integer.parseInt(properties.getProperty("max_num_nodes").trim());
+		
 		this.avg_adding_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_adding_time_sec").trim());
 		this.avg_cleanup_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_cleanup_time_sec").trim());
-		this.avg_remove_time_sec_real_time = Integer.parseInt(properties.getProperty("avg_removing_time_sec").trim());
+	
+		this.avg_remove_time_sec_real_time_map = new HashMap<Integer,Integer>();
+		for(int i=this.max_num_nodes; i>this.min_num_nodes; i--){
+			this.avg_remove_time_sec_real_time_map.put(i, Integer.parseInt(properties.getProperty("avg_removing_time_sec_"+i+"_to_"+(i-1)).trim()));
+		}
+		
+		this.avg_remove_times_sec_wl_time_map = new HashMap<Integer,Integer>();
+		for(int i=this.max_num_nodes; i>this.min_num_nodes; i--){
+			int value_to_conv = this.avg_remove_time_sec_real_time_map.get(i);
+			this.avg_remove_times_sec_wl_time_map.put(i, (int) ((60.0/this.single_duration_sec)*value_to_conv));
+		}
 		
 		this.avg_adding_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_adding_time_sec_real_time);
 		this.avg_cleanup_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_cleanup_time_sec_real_time);
-		this.avg_remove_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_remove_time_sec_real_time);
+		//this.avg_remove_time_sec_wl_time = (int) ((60.0/this.single_duration_sec)*this.avg_remove_time_sec_real_time);
 		
-		this.min_num_nodes = Integer.parseInt(properties.getProperty("min_num_nodes").trim());
-		this.max_num_nodes = Integer.parseInt(properties.getProperty("max_num_nodes").trim());
 		this.max_throughput_percentage = Integer.parseInt(properties.getProperty("max_throughput_percentage").trim()) / 100.0;
 	
 		// read max throughput level
@@ -140,7 +152,9 @@ public class AutoScaler{
 		
 		System.out.println(" - [AutoScaler] 1 minute of real time corresponds to "+(60/this.single_duration_sec)+" minutes of workload time");
         System.out.println(" - [AutoScaler] avg adding time (wl time) : "+String.format("%.3f", this.avg_adding_time_sec_wl_time/60.0).replace(",", ".")+" min");
-        System.out.println(" - [AutoScaler] avg remove time (wl time) : "+String.format("%.3f", this.avg_remove_time_sec_wl_time/60.0).replace(",", ".")+" min");
+        for(int i = this.max_num_nodes; i>this.min_num_nodes; i--){
+        	System.out.println(" - [AutoScaler] avg remove time when there are "+i+" nodes (wl time) : "+String.format("%.3f", this.avg_remove_times_sec_wl_time_map.get(i) /60.0).replace(",", ".")+" min");
+        }
         System.out.println(" - [AutoScaler] avg cleanup time (wl time) : "+String.format("%.3f", this.avg_cleanup_time_sec_wl_time/60.0).replace(",", ".")+" min");
 	}
 
@@ -207,7 +221,11 @@ public class AutoScaler{
 			result = action.getNumber()*this.avg_adding_time_sec_wl_time;
 		}
 		else if (action.getAction().equals(AutoScaleConstants.SCALE_IN)){
-			result = action.getNumber()*this.avg_remove_time_sec_wl_time;
+			long t_rem_tot = 0;
+			for ( int j=(this.current_node_number+action.getNumber()); j>(this.current_node_number); j--){
+				t_rem_tot  = t_rem_tot + this.avg_remove_times_sec_wl_time_map.get(j);
+			}
+			result = t_rem_tot;
 		}
 		return result;
 	}
@@ -287,7 +305,10 @@ public class AutoScaler{
 		int max = this.max_num_nodes;
 		int min = this.min_num_nodes;
 		int t_add = this.avg_adding_time_sec_wl_time*1000;
-		int t_remove = this.avg_remove_time_sec_wl_time*1000;
+		Map<Integer,Integer> t_remove = new HashMap<Integer,Integer>();
+		for(int i=this.max_num_nodes; i>this.min_num_nodes; i--){
+			t_remove.put(i, this.avg_remove_times_sec_wl_time_map.get(i)*1000);
+		}
 		
 		ScalingAction decided_scaling_action = null;
 		
@@ -339,7 +360,12 @@ public class AutoScaler{
 			for( int i = 0; i<(current-min); i++){
 				
 				// predizione del carico e del numero di nodi necessari a servire tale carico
-				long now_plus_time_to_remove_x_nodes = now_ts_wl_time + t_remove*(current-min-i);
+				long t_rem_tot = 0;
+				for ( int j=this.current_node_number; j>(this.min_num_nodes+i); j--){
+					t_rem_tot  = t_rem_tot + t_remove.get(j);
+				}
+				long now_plus_time_to_remove_x_nodes = now_ts_wl_time + t_rem_tot;
+				
 				predicted_load = this.predictor.predict_load_at_time(now_plus_time_to_remove_x_nodes) * (this.scaling_factor);
 				formatted_load = String.format("%.3f", predicted_load).replace(",", ".");
 				required_nodes = this.compute_required_node_number(predicted_load);

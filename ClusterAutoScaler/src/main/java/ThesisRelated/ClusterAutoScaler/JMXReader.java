@@ -2,6 +2,7 @@ package ThesisRelated.ClusterAutoScaler;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +41,9 @@ public class JMXReader {
 	public MBeanServerConnection connect() throws Exception {
 		MBeanServerConnection remote=null;
 		
-		Map<String, String[]> authenticationInfo = new HashMap<String, String[]>();     
-	    this.connector  = JMXConnectorFactory.connect(this.target, authenticationInfo);
+		Hashtable<String, Integer> env = new Hashtable<String, Integer>();
+			env.put("jmx.remote.x.client.connection.check.period",0);  
+	    this.connector  = JMXConnectorFactory.connect(this.target, env);
 	    remote = this.connector.getMBeanServerConnection();  
 		
 		return remote;

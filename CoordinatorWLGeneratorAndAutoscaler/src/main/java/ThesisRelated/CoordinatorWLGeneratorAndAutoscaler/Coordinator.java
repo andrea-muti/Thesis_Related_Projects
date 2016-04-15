@@ -21,7 +21,7 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
-        int number_hour_initial_shift = 18;
+        int number_hour_initial_shift = 8;
         String contact_point = "192.168.0.169";
         String jmx_port = "7199";
         String result_dir_path = "/home/andrea-muti/Scrivania/";
@@ -113,12 +113,18 @@ class GeneratorExecutorRunnable implements Runnable{
         System.out.println(" - [WorkloadGenerator Executor] WorkloadGenerator initialized");
         System.out.println(" - [WorkloadGenerator Executor] start of generated workload will be shifted by "+this.number_hours_initial_shift+" hours with respect to the workload file");
         long approx_total_dur_sec = generator.get_avg_workload_duration_sec() - ((60*this.number_hours_initial_shift)*generator.get_single_duration_sec());
+        int hours = (int) (approx_total_dur_sec / 3600); // get the amount of hours from the seconds
+        int minutes = (int) ((approx_total_dur_sec - (hours*3600))/ 60)  ; // convert seconds (saved in "time") to minutes
+		int seconds = (int) (approx_total_dur_sec) - (hours*3600) - minutes*60; // get the rest
+		String disHour = (hours < 10 ? "0" : "") + hours; // get hours and add "0" before if lower than 10
+		String disMinu = (minutes < 10 ? "0" : "") + minutes; // get minutes and add "0" before if lower than 10
+		String disSec = (seconds < 10 ? "0" : "") + seconds; // get seconds and add "0" before if lower than 10
+		String formattedTime = disHour+":"+disMinu + ":" + disSec; //get the whole time
         double approx_dur_min = approx_total_dur_sec/60.0;
         String form_dur_min = String.format("%.0f", approx_dur_min);
-        String form_dur_hours = String.format("%.2f", approx_dur_min/60.0).replace(",", ".");
         System.out.println(" - [WorkloadGenerator Executor] 1 minute of workload will be generated in "+generator.get_single_duration_sec()+" sec of real time");
         System.out.println(" - [WorkloadGenerator Executor] 1 minute of real time corresponds to "+(60/generator.get_single_duration_sec())+" minutes of workload time");
-        System.out.println(" - [WorkloadGenerator Executor] total approx. simulation duration: "+form_dur_min+" min ("+approx_total_dur_sec+" sec) ("+form_dur_hours+" hours)");
+        System.out.println(" - [WorkloadGenerator Executor] total approx. simulation duration: "+formattedTime+"  ("+form_dur_min+":"+disSec+" min) ("+approx_total_dur_sec+" sec)");
     }
  
     @Override

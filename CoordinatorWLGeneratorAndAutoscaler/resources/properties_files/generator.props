@@ -6,7 +6,7 @@
 csv_separator=" "
 has_headers=false
 workload_filepath=resources/datasets/single_day_workloads/workload_day_16.csv
-single_duration_sec=10
+single_duration_sec=12
 number_of_jmeter_slaves=5
 
 # per il giorno 16 è un buon valore

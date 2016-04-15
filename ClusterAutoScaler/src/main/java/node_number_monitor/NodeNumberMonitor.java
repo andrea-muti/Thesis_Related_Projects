@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -133,7 +134,9 @@ public class NodeNumberMonitor {
 		  		MBeanServerConnection connection = null;
 		  	
 	  			try{
-	  				jmxc = JMXConnectorFactory.connect(url, null);
+	  				Hashtable<String, Integer> env = new Hashtable<String, Integer>();
+	  				env.put("jmx.remote.x.client.connection.check.period",0);
+	  				jmxc = JMXConnectorFactory.connect(url, env);
 		  			jmxc.connect();
 	  				connection = jmxc.getMBeanServerConnection();
 	  				
@@ -154,7 +157,7 @@ public class NodeNumberMonitor {
 		  				writer.append(content+"\n");	
 		  				writer.flush();
 		  			}
-		  			catch (IOException e) {	
+		  			catch (Exception e) {	
 		  				System.err.println(" - [NumberMonitor] Error in writing the file");
 		  			}
 		  			
@@ -190,9 +193,11 @@ public class NodeNumberMonitor {
 	  		JMXConnector jmxc = null;
 
 	  		MBeanServerConnection connection = null;
-	  	
+	  		boolean result;
   			try{
-  				jmxc = JMXConnectorFactory.connect(url, null);
+  				Hashtable<String, Integer> env = new Hashtable<String, Integer>();
+  				env.put("jmx.remote.x.client.connection.check.period",0);
+  				jmxc = JMXConnectorFactory.connect(url, env);
 	  			jmxc.connect();
   				connection = jmxc.getMBeanServerConnection();
   				
@@ -200,11 +205,16 @@ public class NodeNumberMonitor {
 
   				String mode = reader.getOperationMode(connection);
   				
-  				if(mode.equals("NORMAL") || mode.equals("LEAVING")){return true;}
-  				else{return false;}
-  			
+  				if(mode.equals("NORMAL") || mode.equals("LEAVING")){
+  					result= true;
+	  			}
+  				else{result=false;}
+  				if(connection!=null || jmxc!=null){
+  					jmxc.close();
+  				}  			
   			}
-  			catch(Exception e){ return false; }
+  			catch(Exception e){ result=false; }
+  			return result;
 		}		
 	}
 	

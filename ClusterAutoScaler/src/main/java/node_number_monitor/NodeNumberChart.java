@@ -20,7 +20,7 @@ import javafx.util.StringConverter;
 public class NodeNumberChart extends Application {
 	
 	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
-	double single_duration_sec = 10.0;
+	double single_duration_sec = 12.0;
 
     @Override public void start(Stage stage) {
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -158,7 +159,9 @@ public class AllThroughputReader {
 		  		MBeanServerConnection connection = null;
 		  	
 	  			try{
-	  				jmxc = JMXConnectorFactory.connect(url, null);
+	  				Hashtable<String, Integer> env = new Hashtable<String, Integer>();
+	  				env.put("jmx.remote.x.client.connection.check.period",0);
+	  				jmxc = JMXConnectorFactory.connect(url, env);
 		  			jmxc.connect();
 	  				connection = jmxc.getMBeanServerConnection();
 	  				
