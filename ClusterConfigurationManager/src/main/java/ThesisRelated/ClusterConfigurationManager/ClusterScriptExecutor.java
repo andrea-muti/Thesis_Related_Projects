@@ -30,8 +30,9 @@ public class ClusterScriptExecutor {
 							  +remote_user+" "+remote_pass+" "+cass_path;
 	
 		try{
-			@SuppressWarnings("unused")
+			//System.out.println(" - sto per invocare exec startup script exec comm : "+exec_command);
 			Process starter_process = Runtime.getRuntime().exec(exec_command);
+			//System.out.println(" -  exec startup script finita");
 		}
 		catch(Exception e){
 			System.err.println(" - ERROR in the startup of cassandra on node "+node_ip);

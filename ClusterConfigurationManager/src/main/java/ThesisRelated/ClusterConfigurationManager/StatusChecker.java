@@ -25,7 +25,10 @@ public class StatusChecker implements Runnable{
 		String state = "";
 		String current_state = "";
 		while(running){
+			try{
 			this.connection = this.cm.connect();
+			}
+			catch(Exception e){}
 			
 			if( this.connection==null ){ current_state = "DOWN"; }
 			else{
@@ -34,8 +37,8 @@ public class StatusChecker implements Runnable{
 			}
 			if( !current_state.equals(state) ){
 				state = current_state;
-				if(state.equals("ERROR")) { System.out.println("     - state of node @ "+this.ip_address+" : ~DOWN");}
-				else{ System.out.println("     - state of node @ "+this.ip_address+" : "+state); }
+				if(state.equals("ERROR")) { System.out.println("            - state of node @ "+this.ip_address+" : ~DOWN");}
+				else{ System.out.println("            - state of node @ "+this.ip_address+" : "+state); }
 			}
 			
 			if( state.equals(this.stop_state) || (state.equals("DOWN") && this.stop_state.equals("DECOMMISSIONED")) ){ 

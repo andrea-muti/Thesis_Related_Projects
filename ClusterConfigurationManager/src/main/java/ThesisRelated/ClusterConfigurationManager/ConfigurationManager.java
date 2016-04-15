@@ -75,7 +75,7 @@ public class ConfigurationManager {
 		// 0) in teoria qui andrebbe accesa la VM corrispondente al nodo
 		
 		// 1) STARTING THE NEW NODE
-		System.out.println(" ---- starting cassandra process on the new node ("+ip_address+")");
+		System.out.println("         [ConfigurationManager] - starting cassandra process on the new node ("+ip_address+")");
 		start = System.currentTimeMillis();
 		
 		boolean startup_result = start_cassandra(ip_address);
@@ -83,10 +83,10 @@ public class ConfigurationManager {
 		
 		start_time = (end - start) / 1000;
 		if( startup_result ){  
-			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec ]"); 
+			System.out.println("         [ConfigurationManager] - startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec (true time) ]"); 
 		}
 		else{
-			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec ]");
+			System.out.println("         [ConfigurationManager] - startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec (true time)]");
 			return false;
 		}
 		
@@ -125,10 +125,10 @@ public class ConfigurationManager {
 		
 		start_time = (end - start) / 1000;
 		if( startup_result ){  
-			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec ]"); 
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : DONE [ "+start_time+" sec (true time) ]"); 
 		}
 		else{
-			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec ]");
+			System.out.println(" ---- startup of cassandra process on new node ("+ip_address+") : FAILED [ "+start_time+" sec (true time) ]");
 			return false;
 		}
 		
@@ -196,7 +196,7 @@ public class ConfigurationManager {
 		double dec_time;
 		start = System.currentTimeMillis();
 		// 1) DECOMMISSION
-		System.out.println(" ---- decommissioning node ("+ip_address+")");
+		System.out.println("         [ConfigurationManager] - decommissioning node ("+ip_address+")");
 		boolean decommission_result = decommissionNode(ip_address, jmx_port);
 		end = System.currentTimeMillis();
 		dec_time = (end-start)/1000;
@@ -204,14 +204,14 @@ public class ConfigurationManager {
 		try { Thread.sleep(4000); } 
 		catch (InterruptedException e) {}
 		
-		if( decommission_result ){  System.out.println(" ---- decommission of node ("+ip_address+") : DONE [ "+dec_time+" sec ]"); }
+		if( decommission_result ){  System.out.println("         [ConfigurationManager] - decommission of node ("+ip_address+") : DONE [ "+dec_time+" sec (true time) ]"); }
 		else{
-			System.out.println(" ---- decommission of node ("+ip_address+") : FAILED [ "+dec_time+" sec ]");
+			System.out.println("         [ConfigurationManager] - decommission of node ("+ip_address+") : FAILED [ "+dec_time+" sec (true time) ]");
 			return false;
 		}
 		
 		// 2) KILL CASSANDRA PROCESS ON THE NODE TO REMOVE
-		System.out.print(" ---- killing cassandra process on node ("+ip_address+") : ");
+		System.out.print("         [ConfigurationManager] - killing cassandra process on node ("+ip_address+") : ");
 		boolean kill_result = ClusterScriptExecutor.cassandra_process_killer( ip_address, 
 				this.remote_username, this.remote_password);
 		if( kill_result ){  System.out.println("DONE"); }
@@ -222,7 +222,7 @@ public class ConfigurationManager {
 		
 		
 		// 3) REMOVE OLD DATA FROM THE NODE TO REMOVE
-		System.out.print(" ---- removing old data from the node ("+ip_address+") : ");
+		System.out.print("         [ConfigurationManager] - removing old data from the node ("+ip_address+") : ");
 		boolean removal_result = ClusterScriptExecutor.old_data_removal( ip_address, 
 				this.remote_username, this.remote_password, this.remote_cassandra_dir);
 		if( removal_result ){  System.out.println("DONE"); }
@@ -282,7 +282,7 @@ public class ConfigurationManager {
 			return false;
 		}
 		
-		System.out.println(" - Cleaning up all nodes of the cluster IN PARALLEL");
+		System.out.println("         [ConfigurationManager] - Cleaning up all nodes of the cluster IN PARALLEL");
 		boolean cleanup_result = true;;
 		long start,end;
 		double cleanup_time;
@@ -293,7 +293,7 @@ public class ConfigurationManager {
 			executor.execute(new Runnable() {
 				@Override
 				public void run() {
-					System.out.println(" ---- executing cleanup on node "+node_ip);
+					System.out.println("         [ConfigurationManager] - executing cleanup on node "+node_ip);
 					long start = System.currentTimeMillis();
 					// exec cleanup on the node
 					boolean cleanup_result = ClusterScriptExecutor.cleanup(node_ip, remote_username, 
@@ -301,10 +301,10 @@ public class ConfigurationManager {
 					long end = System.currentTimeMillis();
 					double cleanup_time = (end - start) / 1000;
 					if(cleanup_result){ 
-						System.out.println(" ---- cleanup on node "+node_ip+" : DONE [ "+cleanup_time+" sec ]"); 
+						System.out.println("         [ConfigurationManager] - cleanup on node "+node_ip+" : DONE [ "+cleanup_time+" sec (true time) ]"); 
 					}
 					else{ 
-						System.out.println(" ---- cleanup on node "+node_ip+" : FAILED [ "+cleanup_time+" s ]"); 
+						System.out.println("         [ConfigurationManager] - cleanup on node "+node_ip+" : FAILED [ "+cleanup_time+" sec (true time) ]"); 
 						cleanup_result = false;
 					}
 					latch.countDown();
@@ -365,7 +365,7 @@ public class ConfigurationManager {
 	 * @param ip_address : IP Address of the node where the content of data dir has to be removed
 	 * @return true if the removal process was successfull, false otherwise.
 	 */
-	private boolean old_data_removal(String ip_address){
+	public boolean old_data_removal(String ip_address){
 		boolean success = true;
 		boolean removal_result = ClusterScriptExecutor.old_data_removal( ip_address, 
 				this.remote_username, this.remote_password, this.remote_cassandra_dir);
@@ -624,16 +624,17 @@ public class ConfigurationManager {
         //  confManager.cleanup_all_nodes();
         
         
-        //confManager.cleanup_all_nodes_parallel();
+        confManager.cleanup_all_nodes_parallel();
+        //confManager.old_data_removal("192.168.1.34");
         
         /*
         // AGGIUNTA NODO 
-        String ip_new_node = "192.168.1.34";
+        String ip_new_node = "192.168.1.57";
         System.out.println(" - adding new cassandra node on "+ip_new_node);
         boolean resStopGossip = confManager.addNode(ip_new_node, "7199");
         if(resStopGossip){ System.out.println(" - node insertion : OK"); }
         else{ System.out.println(" - node insertion : FAILED"); }
-     
+       
         
        */
         // RIMOZIONE NODO 

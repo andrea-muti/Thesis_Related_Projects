@@ -25,11 +25,10 @@ public class JMXConnectionManager {
 	
 	public JMXConnectionManager(String address, String JMX_port){
 		try{
-	    	this.address_invocation = address;
+			this.address_invocation = address;
 	    	this.jmx_port_number = JMX_port;
 	    	String serviceURL = "service:jmx:rmi:///jndi/rmi://"+this.address_invocation+":"+this.jmx_port_number+"/jmxrmi";
 	        this.target = new JMXServiceURL(serviceURL);
-	        
 	    }
 	    catch(Exception e){
 	        System.out.println("[e]"+e.getClass().getName()+" "+e.getMessage());
@@ -44,7 +43,7 @@ public class JMXConnectionManager {
 	    try {
 			this.connector  = JMXConnectorFactory.connect(this.target, authenticationInfo);
 			remote = this.connector.getMBeanServerConnection();  
-		} catch (Exception e) { }
+		} catch (Exception e) {  }
 		
 		return remote;
 	}
