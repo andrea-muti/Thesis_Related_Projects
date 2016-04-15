@@ -183,7 +183,7 @@ public class JMeterPlanCreator {
 			writer.write(complete_plan);
 			writer.close();
 		}
-		catch(Exception e){ result = false; }
+		catch(Exception e){ System.out.println("errore");e.printStackTrace();result = false; }
 		return result;
 	}
 	
