@@ -8,6 +8,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import ThesisRelated.ClusterConfigurationManager.ConfigurationManager;
 import ThesisRelated.ClusterWorkloadPredictor.ClusterWorkloadPredictor;
@@ -158,14 +159,17 @@ public class AutoScaler{
 										 
 		long start_ts = System.currentTimeMillis();
 		
-		// TODO : invece che un for dovrebbe essere un while, 
-		// che si ferma quando qualcuno chiede di stoppare l'autoscaler
 		execute = true;
 		while( execute ){	
 			long elapsed_sec = (long) time_tracker.getElapsed();
 			double elapsed_min = Double.parseDouble(String.format("%.3f", elapsed_sec/60.0).replace(",", "."));
-			double real_elapsed_min = Double.parseDouble(String.format("%.2f", (((System.currentTimeMillis() - start_ts)/1000.0)/60.0)).replace(",", "."));
-			System.out.println("\n - [AutoScaler] real time elapsed: "+real_elapsed_min+" min --> WL time elapsed: "+elapsed_min+" min");
+			int minutes = (int) ((((System.currentTimeMillis() - start_ts)/1000.0)) / 60); // convert seconds (saved in "time") to minutes
+			int seconds = (int) (((System.currentTimeMillis() - start_ts)/1000.0)) - minutes*60; // get the rest
+			String disMinu = (minutes < 10 ? "0" : "") + minutes; // get minutes and add "0" before if lower than 10
+			String disSec = (seconds < 10 ? "0" : "") + seconds; // get seconds and add "0" before if lower than 10
+			String formattedTime = disMinu + ":" + disSec; //get the whole time
+			double real_elapsed_min ;
+			System.out.println("\n - [AutoScaler] real time elapsed: "+formattedTime +" min --> WL time elapsed: "+elapsed_min+" min");
 			
 			long wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
 			
@@ -221,7 +225,7 @@ public class AutoScaler{
 				for(int i=0; i<action.getNumber(); i++){
 					int index_node_to_add = this.current_node_number + i;
 					String address_node_to_add = this.node_addresses_map.get(index_node_to_add);
-					boolean add_result = this.config_manager.fake_addNode(address_node_to_add,this.jmx_port_number);
+					boolean add_result = this.config_manager.addNode(address_node_to_add,this.jmx_port_number);
 					if(!add_result){ System.err.println(" - [AutoScaler] ATTENTION! the execution of the addNode("+address_node_to_add+") has FAILED !"); }
 				}
 				this.someone_is_joining=false;
@@ -247,7 +251,7 @@ public class AutoScaler{
 				for(int i=0; i<action.getNumber(); i++){
 					int index_node_to_remove = this.current_node_number - i -1;
 					String address_node_to_remove = this.node_addresses_map.get(index_node_to_remove);
-					boolean remove_result = this.config_manager.fake_removeNode(address_node_to_remove, this.jmx_port_number);
+					boolean remove_result = this.config_manager.removeNode(address_node_to_remove, this.jmx_port_number);
 					if(!remove_result){ System.err.println(" - [AutoScaler] ATTENTION! the execution of the addNode("+address_node_to_remove+") has FAILED !"); }
 				}
 				this.someone_is_leaving=false;
@@ -460,9 +464,9 @@ public class AutoScaler{
         String autoscaler_properties_path = "resources/properties_files/autoscaler.properties";
         String predictor_properties_path = "resources/properties_files/predictor.properties";
         String conf_man_prop_path = "resources/properties_files/propertiesCM.properties";
-        int single_duration_sec = 12; // 1 minuto vero = 5 minuti simulati
+        int single_duration_sec = 12; // 1 minuto vero = 6 minuti simulati
         int scaling_factor = 810; 
-        int initial_shift_num_hours = 8;
+        int initial_shift_num_hours =6;
         AutoScaler scaler = new AutoScaler( autoscaler_properties_path, predictor_properties_path, 
         		conf_man_prop_path, single_duration_sec, scaling_factor, initial_shift_num_hours );
         scaler.start();

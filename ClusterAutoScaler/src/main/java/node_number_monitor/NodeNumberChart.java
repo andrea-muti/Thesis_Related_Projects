@@ -14,12 +14,13 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 
 public class NodeNumberChart extends Application {
 	
 	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
-	double single_duration_sec = 12.0;
+	double single_duration_sec = 10.0;
 
     @Override public void start(Stage stage) {
 
@@ -42,10 +43,28 @@ public class NodeNumberChart extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [min]");
+        xAxis.setLabel("Time [ minutes ]");
         xAxis.setTickUnit(1);
+        xAxis.setMinorTickCount(0);
+        
 		yAxis.setLabel("Number Of Nodes");
 		yAxis.setTickUnit(1);
+		yAxis.setAutoRanging(false);
+		yAxis.setUpperBound(8);
+		yAxis.setMinorTickCount(0);
+		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
+			
+			@Override
+			public String toString(Number object) {
+				return String.format("%.0f", object);
+			}
+			
+			@Override
+			public Number fromString(String string) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
 		
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
@@ -104,8 +123,7 @@ public class NodeNumberChart extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				long time = (long) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
-				System.out.println(time);
+				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				int value = Integer.parseInt(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();

@@ -55,29 +55,36 @@ public class WorkloadTimeTracker {
 		
 		final Runnable timeIncrementor = new Runnable() {
 			public void run() {
-				if(time_unit%2==0){
-					elapsed = elapsed + (60/2.0) ; 
+				if(time_unit%5==0){
+					elapsed = elapsed + (60/5.0);
+				}
+				else if(time_unit%4==0){
+					elapsed = elapsed + (60/4.0);
 				}
 				else if(time_unit%3==0){
 					elapsed = elapsed + (60/3.0);
 				}
-				else if(time_unit%5==0){
-					elapsed = elapsed + (60/5.0);
+				else if( time_unit%2==0 ){
+					elapsed = elapsed + (60/2.0) ; 
 				}
 				else{ elapsed = elapsed + 60; }
 			}
 		};
 		
 		double unit = 0;
-		if(time_unit%2==0){
-			unit = this.time_unit/2.0 ; 
-		}
-		else if(time_unit%3==0){
-			unit = this.time_unit/3.0;
-		}
-		else if(time_unit%5==0){
+		if(time_unit%5==0){
 			unit = this.time_unit/5.0;
 		}
+		else if(time_unit%4==0){
+			unit = this.time_unit/4.0;
+		}
+		else if(time_unit%3==0){
+			unit = this.time_unit/3.0 ; 
+		}
+		else if(time_unit%2==0){
+			unit = this.time_unit/2.0 ; 
+		}
+		else {unit = this.time_unit; } 
 		
 		scheduler.scheduleAtFixedRate(timeIncrementor, (long) unit, (long) unit, SECONDS);
 		return true;
