@@ -636,7 +636,7 @@ public class ConfigurationManager {
         else{ System.out.println(" - node insertion : FAILED"); }
        
         
-       */
+      
         // RIMOZIONE NODO 
       	String ip_to_remove = "192.168.1.34";
 		System.out.println(" - invoked removal of node "+ip_to_remove);
@@ -644,7 +644,7 @@ public class ConfigurationManager {
 		if(resDecom){ System.out.println(" - removing node : OK"); }
 		else{ System.out.println(" - removing node : FAILED"); }
 		
-        
+         */
         ZonedDateTime end = ZonedDateTime.now();
         
         System.out.println("\n - END @ "+end.toString());

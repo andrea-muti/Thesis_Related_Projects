@@ -5,12 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+
+import AllCPUReader_Visualizer.AllCPUReader;
+import AllThroughputReader_Visualizer.AllThroughputReader;
 import ThesisRelated.ClusterWorkloadGenerator.WorkloadGenerator;
 import node_number_monitor.NodeNumberMonitor;
 import ThesisRelated.ClusterAutoScaler.AutoScaler;
 
 /**
  * Coordinator between the WorkloadGenerator and the AutoScaler
+ * and the various metrics readers
+ * 
  * @author andrea-muti
  * @since 06-04-2016
  */
@@ -21,19 +26,23 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
-        int number_hour_initial_shift = 8;
+        int number_hour_initial_shift = 0;
         String contact_point = "192.168.0.169";
         String jmx_port = "7199";
-        String result_dir_path = "/home/andrea-muti/Scrivania/";
+        String result_dir_path = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/";
         
         final  CountDownLatch latch = new CountDownLatch(1);
         GeneratorExecutorRunnable generatorExecutor = new GeneratorExecutorRunnable(latch, number_hour_initial_shift);
         AutoscalerExecutorRunnable autoscalerExecutor = new AutoscalerExecutorRunnable(latch, number_hour_initial_shift);
         NumberMonitorRunnable numberMonitorExeutor = new NumberMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
+        ThroughputMonitorRunnable throughputMonitorExeutor = new ThroughputMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
+        CpuMonitorRunnable cpuMonitorExeutor = new CpuMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
         
         Thread generatorModule = new Thread(generatorExecutor);
         Thread autoscalerModule = new Thread(autoscalerExecutor);
         Thread numberMonitor = new Thread(numberMonitorExeutor);
+        Thread throughputMonitor = new Thread(throughputMonitorExeutor);
+        Thread cpuMonitor = new Thread(cpuMonitorExeutor);
         
         try{ Thread.sleep(4000); }
         catch( Exception e ){}
@@ -42,6 +51,8 @@ public class Coordinator {
         generatorModule.start();
         autoscalerModule.start();
         numberMonitor.start();
+        throughputMonitor.start();
+        cpuMonitor.start();
         
         try{ Thread.sleep(4000); }
         catch( Exception e ){}
@@ -52,6 +63,69 @@ public class Coordinator {
        
      }
 }
+
+/*--------------------------------------------------------------------------------------------------------------*/
+
+class CpuMonitorRunnable implements Runnable{
+	
+	private final CountDownLatch latch;
+    private AllCPUReader monitor;
+	
+	public CpuMonitorRunnable(CountDownLatch latch, String contact_point, String jmx_port, String result_dir_path){
+		this.latch=latch;
+		this.monitor=new AllCPUReader(contact_point, jmx_port, result_dir_path);
+	}
+
+	@Override
+	public void run() {
+		try {
+        	System.out.println(" - [CpuMonitor Executor] CpuMonitor awaiting start");
+            latch.await();          //The thread keeps waiting till it is informed
+        } catch (InterruptedException e) {
+        	System.err.println(" - [CpuMonitor Executor] CpuMonitor thread awaiting to start has been interrupet");
+            e.printStackTrace();
+            System.err.println(" - [CpuMonitor Executor] ABORTING EXECUTION");
+            System.exit(0);
+        }
+        System.out.println(" - [CpuMonitor Executor] start monitoring CPU utilization of nodes");
+        this.monitor.start_read_cpu();
+        System.out.println(" - [CpuMonitor Executor] stop monitoring CPU utilization of nodes");
+	}
+	
+}
+
+/*--------------------------------------------------------------------------------------------------------------*/ 
+
+class ThroughputMonitorRunnable implements Runnable{
+	
+	private final CountDownLatch latch;
+    private AllThroughputReader monitor;
+	
+	public ThroughputMonitorRunnable(CountDownLatch latch, String contact_point, String jmx_port, String result_dir_path){
+		this.latch=latch;
+		this.monitor=new AllThroughputReader(contact_point, jmx_port, result_dir_path);
+	}
+
+	@Override
+	public void run() {
+		try {
+        	System.out.println(" - [ThroughputMonitor Executor] ThroughputMonitor awaiting start");
+            latch.await();          //The thread keeps waiting till it is informed
+        } catch (InterruptedException e) {
+        	System.err.println(" - [ThroughputMonitor Executor] ThroughputMonitor thread awaiting to start has been interrupet");
+            e.printStackTrace();
+            System.err.println(" - [ThroughputMonitor Executor] ABORTING EXECUTION");
+            System.exit(0);
+        }
+        System.out.println(" - [ThroughputMonitor Executor] start monitoring throughput of nodes");
+        this.monitor.start_read_throughput();
+        System.out.println(" - [ThroughputMonitor Executor] stop monitoring throughput of nodes");
+	}
+	
+}
+
+/*--------------------------------------------------------------------------------------------------------------*/ 
+
 class NumberMonitorRunnable implements Runnable{
 	
 	private final CountDownLatch latch;

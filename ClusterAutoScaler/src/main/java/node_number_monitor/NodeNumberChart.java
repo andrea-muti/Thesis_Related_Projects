@@ -140,7 +140,7 @@ public class NodeNumberChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[1];
-    	args[0] = "/home/andrea-muti/Scrivania/cluster_node_number.txt"; 
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cluster_node_number.txt"; 
 
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

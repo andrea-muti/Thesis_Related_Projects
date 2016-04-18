@@ -20,6 +20,9 @@ import javafx.stage.Stage;
 // versione modificata per l'all throughput reader
 
 public class AllThroughputChart extends Application {
+	
+	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
+	double single_duration_sec = 12.0;
 
     @Override public void start(Stage stage) {
 
@@ -42,7 +45,7 @@ public class AllThroughputChart extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [seconds]");
+        xAxis.setLabel("Time [ minutes ]");
         xAxis.setTickUnit(10);
 		yAxis.setLabel("Throughput [ req/sec ]");
 
@@ -66,6 +69,7 @@ public class AllThroughputChart extends Application {
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     
@@ -114,7 +118,8 @@ public class AllThroughputChart extends Application {
 			
 			while ( line != null ){
 				StringTokenizer st = new StringTokenizer(line);
-				double time = ( Double.parseDouble(st.nextToken()) - first_ts ) /1000.0; 
+				//double time = ( Double.parseDouble(st.nextToken()) - first_ts ) /1000.0; 
+				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				double value = Double.parseDouble(st.nextToken()); 
 				
 				values.add(value);
@@ -143,7 +148,7 @@ public class AllThroughputChart extends Application {
 				while ( line != null ){
 					if(j>=values.size()){break;}
 					StringTokenizer st = new StringTokenizer(line);
-					double time = (Double.parseDouble(st.nextToken()) - first_ts)/1000.0; 
+					double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 					double value = Double.parseDouble(st.nextToken()); 
 					
 					values.set(j, value+values.get(j));
@@ -183,7 +188,8 @@ public class AllThroughputChart extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				long time = (Long.parseLong(st.nextToken()) - first_ts) / 1000; 
+				//long time = (Long.parseLong(st.nextToken()) - first_ts) / 1000; 
+				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				double value = Double.parseDouble(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
@@ -200,12 +206,12 @@ public class AllThroughputChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[6];
-    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.0.169.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.0.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.7.txt"; 
-    	args[3] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.34.txt"; 
-    	args[4] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.57.txt"; 
-    	args[5] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_192.168.1.61.txt"; 
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.0.169.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.1.0.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.1.7.txt"; 
+    	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.1.34.txt"; 
+    	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.1.57.txt"; 
+    	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/throughput_192.168.1.61.txt"; 
     	/*	
     	args[0] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.1.txt"; 
     	args[1] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.2.txt"; 

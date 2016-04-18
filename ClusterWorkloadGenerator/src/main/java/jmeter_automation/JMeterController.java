@@ -49,6 +49,8 @@ public class JMeterController {
 		// allo startup killiamo e facciamo ripartire i jmeter-slaves per sicurezza
 		Process killer = Runtime.getRuntime().exec("sh files/scripts/jmeter_slaves_restarter.sh");
 		killer.waitFor();
+		killer = Runtime.getRuntime().exec("sh resources/scripts/jmeter_slaves_restarter.sh");
+		killer.waitFor();
 		}
 		catch(Exception e){
 			System.out.println(" FAILED");

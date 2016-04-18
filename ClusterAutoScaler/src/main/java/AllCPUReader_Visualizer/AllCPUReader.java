@@ -24,11 +24,63 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 
-
-
 //legge la cpu anche dei nodi spenti , ovvero 0
 
 public class AllCPUReader {
+	
+	@SuppressWarnings("unused")
+	private String contact_point_address;
+	private String jmx_port;
+	private String dir_path;
+	private CpuReader[] readers;
+	private ExecutorService executor;
+	private boolean execute;
+	
+	public AllCPUReader(String contact_point_addr, String jmx_port, String dir_path){
+		this.contact_point_address=contact_point_addr;
+		this.jmx_port=jmx_port;
+		this.dir_path=dir_path;
+		this.execute=false;
+		List<String> all_nodes = new LinkedList<String>();
+        all_nodes.add("192.168.0.169");
+        all_nodes.add("192.168.1.0");
+        all_nodes.add("192.168.1.7");
+        all_nodes.add("192.168.1.34");
+        all_nodes.add("192.168.1.57");
+        all_nodes.add("192.168.1.61");
+        
+        this.readers = new CpuReader[all_nodes.size()]; 
+        int i = 0;
+        for( String ip : all_nodes ){
+			CpuReader reader = new CpuReader(ip, this.jmx_port,  this.dir_path);
+			readers[i] = reader;
+			i++;
+		}
+        this.executor = Executors.newFixedThreadPool(readers.length);
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(this.readers));
+        System.out.println(" - [AllCPUReader] CPU Reader initialized");
+	}
+	
+	public void start_read_cpu(){
+		System.out.println(" - [AllCPUReader] start reading nodes CPU [ results are saved in dir "+dir_path+"  ]");
+		this.execute=true;
+		while(execute){
+			for (int j = 0; j < readers.length; j++) {
+				CpuReader reader = this.readers[j];
+				executor.execute(reader);
+			}
+			try { Thread.sleep(1000); }
+			catch (InterruptedException e) {e.printStackTrace();}
+		}
+	}
+	
+	public void stop_read_cpu(){
+		this.execute=false;
+		this.executor.shutdown();
+		// Wait until all threads are finish
+		while (!executor.isTerminated()) {}
+	}
+	
 	
 	public static void main(String[] args) throws IOException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, AttributeNotFoundException, InterruptedException{
 				
@@ -45,37 +97,9 @@ public class AllCPUReader {
     	System.out.println("\n **** CLUSTER NODES CPU READER ****\n");   	
        	String port_number = "7199";  
        	
-        List<String> all_nodes = new LinkedList<String>();
-        all_nodes.add("192.168.0.169");
-        all_nodes.add("192.168.1.0");
-        all_nodes.add("192.168.1.7");
-        all_nodes.add("192.168.1.34");
-        all_nodes.add("192.168.1.57");
-        all_nodes.add("192.168.1.61");
-       
-        CpuReader[] readers = new CpuReader[all_nodes.size()]; 
-        int i = 0;
-        for( String ip : all_nodes ){
-			CpuReader reader = new CpuReader(ip, port_number,  dir_path);
-			readers[i] = reader;
-			i++;
-		}
-        System.out.println("");
-        
-        ExecutorService executor = null;
-        executor = Executors.newFixedThreadPool(readers.length);
-        for(int k = 0; k<1000000000; k++){
-			for (int j = 0; j < readers.length; j++) {
-				CpuReader reader = readers[j];
-				executor.execute(reader);
-			}
-			Thread.sleep(1000);
-        }
-    	executor.shutdown();
-		// Wait until all threads are finish
-		while (!executor.isTerminated()) {
-			
-		}
+       	AllCPUReader cpu_reader = new AllCPUReader(contact_point_addr, port_number, dir_path);
+       	cpu_reader.start_read_cpu();
+      
 	}
 	
 	
@@ -115,7 +139,7 @@ public class AllCPUReader {
 		       this.port_number = port;
 			   String file_name = dir_path+"/cpu_"+this.ip_address+".txt";
 				try {
-					this.writer = new BufferedWriter(new FileWriter(file_name, true));		
+					this.writer = new BufferedWriter(new FileWriter(file_name, false));		
 				} catch (IOException e) {
 					System.err.println("Error in opening: "+file_name);
 				}	
@@ -149,9 +173,6 @@ public class AllCPUReader {
 	  				// è vivo
 	  			
 		  			double cpu_level_sample1 = getProcessCPULoad(connection);
-		  			
-
-		  			
 		  			double cpu_level = ( cpu_level_sample1 ) ;
 		  			
 		  			try {

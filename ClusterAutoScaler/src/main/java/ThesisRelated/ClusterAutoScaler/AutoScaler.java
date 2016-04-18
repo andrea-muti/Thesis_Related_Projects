@@ -50,6 +50,8 @@ public class AutoScaler{
 	private boolean cleanups_are_running;
 	private boolean someone_is_leaving;
 	
+	private long decided_scaling_action_expected_end;
+	
 	private boolean execute = false;
 	
 	public AutoScaler( String autoscaler_properties_path, String predictor_properties_path, 
@@ -191,22 +193,13 @@ public class AutoScaler{
 			ScalingAction action = decide_scaling_action(wl_now_ts);
 			
 			// EXECUTE the decided scaling action
-			double start_exec_time_sec = this.time_tracker.getElapsed();
 			execute_scaling_action(action, wl_now_ts);
-			double exec_duration_time_sec = ( this.time_tracker.getElapsed() - start_exec_time_sec );
-				
-			// if the execution of the scaling operation finished before the time that was assessed,
-			// then we should wait the remaining time
-			long minimum_admitted_duration_sec = compute_minimum_admitted_duration_sec_in_wl_time(action);
-			if(exec_duration_time_sec < minimum_admitted_duration_sec){		
-				System.out.println(" - [AutoScaler] wait some seconds since the scaling execution finished before what was expected");
-				long n_sec_to_wait_in_wl_time = minimum_admitted_duration_sec - (long)exec_duration_time_sec ;
-				long n_sec_to_wait_in_real_time = n_sec_to_wait_in_wl_time * ((long)(this.single_duration_sec/60.0));
-				try { Thread.sleep(n_sec_to_wait_in_real_time * 1000); } 
-				catch (InterruptedException e) {}
-			}
+					
+			if(!action.getAction().equals(AutoScaleConstants.KEEP_CURRENT)){ wait_expected_end(); }
+			
 			try{ Thread.sleep(1000*n_sec_between_sampling); }
 		    catch(Exception e){}
+
 		}
 	}
 	
@@ -215,19 +208,29 @@ public class AutoScaler{
 		System.out.println(" - [AutoScaler] stopping the execution as requested");
 	}
 	
-	private long compute_minimum_admitted_duration_sec_in_wl_time(ScalingAction action){
-		long result = 0;
-		if(action.getAction().equals(AutoScaleConstants.SCALE_OUT)){
-			result = action.getNumber()*this.avg_adding_time_sec_wl_time;
-		}
-		else if (action.getAction().equals(AutoScaleConstants.SCALE_IN)){
-			long t_rem_tot = 0;
-			for ( int j=(this.current_node_number+action.getNumber()); j>(this.current_node_number); j--){
-				t_rem_tot  = t_rem_tot + this.avg_remove_times_sec_wl_time_map.get(j);
+	private void wait_expected_end(){
+		long elapsed_sec = (long) time_tracker.getElapsed();
+		long wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
+		
+		//System.out.println("[DEBUG] la decided scaling action appena eseguita doveva finire alle "+this.convert_ts_to_string_date(decided_scaling_action_expected_end));
+		//System.out.println("[DEBUG] ora sono le "+this.convert_ts_to_string_date(wl_now_ts));
+		boolean first=true;
+		while( wl_now_ts < decided_scaling_action_expected_end ){
+			if(first){
+				System.out.println(" - [AutoScaler] wait some seconds since the scaling execution finished before what was expected");
+				try { Thread.sleep((decided_scaling_action_expected_end - wl_now_ts)/(60/this.single_duration_sec)); } 
+				catch (InterruptedException e) {}
+				elapsed_sec = (long) time_tracker.getElapsed();
+				wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
+				first=false;
 			}
-			result = t_rem_tot;
+			else{
+				try { Thread.sleep(1000); } 
+				catch (InterruptedException e) {}
+				elapsed_sec = (long) time_tracker.getElapsed();
+				wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
+			}
 		}
-		return result;
 	}
 	
 	private void execute_scaling_action(ScalingAction action, long now_ts_wl_time){
@@ -340,6 +343,7 @@ public class AutoScaler{
 				if(computed_sa.getAction().equals(AutoScaleConstants.SCALE_OUT) && computed_sa.getNumber()>=(max-current-i)){
 					System.out.println("    - required scaling action to execute is : ("+computed_sa.getAction()+";"+computed_sa.getNumber()+")");
 					decided_scaling_action = computed_sa;
+					decided_scaling_action_expected_end = now_plus_time_to_add_x_nodes;
 					if(current + computed_sa.getNumber() > max){
 						System.out.println("    - [ only "+(max-current)+" out of "+computed_sa.getNumber()+" nodes can be added since "+max+" is the maximum number of nodes ]");
 						decided_scaling_action = new ScalingAction(computed_sa.getAction(), (max-current));
@@ -378,6 +382,7 @@ public class AutoScaler{
 				if( computed_sa.getAction().equals(AutoScaleConstants.SCALE_IN) && computed_sa.getNumber()>=(current-min-i) ){
 					System.out.println("    - required scaling action to execute is : ("+computed_sa.getAction()+";"+computed_sa.getNumber()+")");
 					decided_scaling_action = computed_sa;
+					decided_scaling_action_expected_end = now_plus_time_to_remove_x_nodes;
 					if( current - computed_sa.getNumber() < min ){
 						System.out.println("    - [ only "+(current-min)+" out of "+computed_sa.getNumber()+" nodes can be removed since "+min+" is the minimun number of nodes ]");
 						decided_scaling_action = new ScalingAction(computed_sa.getAction(), (current-min));

@@ -113,25 +113,28 @@ public class WorkloadGenerator {
 		
 		
         this.execute=true;
+        
+        /*
         for(int i=0; i<30000; i++){
 			System.out.println("\n     #@#@#@# [print di test] WORKLOAD GENERATOR STA GENERANDO CARICO #@#@#@#@# \n");
 			try{ Thread.sleep(30*1000);}
 			catch(Exception e){}
 		}
+         */
         
-        
-        //this.jrunner.runWorkload();
+     
+        this.jrunner.runWorkload();
         
         this.execute=false;
         
-        /*
+       
         // wait until termination of workload execution
         // non dovrei mai entrare in questo while, ma ce lo lasciamo per sicurezza
         while(jrunner.isRunning()){
         	try { Thread.sleep(1000); } 
         	catch (InterruptedException e) {}
         }
-       */
+      
 	}
 	
 	public int get_single_duration_sec(){

@@ -19,7 +19,10 @@ import javafx.stage.Stage;
 // versione modificata per l'all cpu reader
 
 public class AllCpuChart extends Application {
-
+	
+	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
+	double single_duration_sec = 12.0;
+	
     @Override public void start(Stage stage) {
 
     	Parameters parameters = getParameters();    
@@ -41,7 +44,7 @@ public class AllCpuChart extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [seconds]");
+        xAxis.setLabel("Time [ minutes ]");
         xAxis.setTickUnit(10);
 		yAxis.setLabel("CPU Utilization [ % ]");
 
@@ -63,6 +66,7 @@ public class AllCpuChart extends Application {
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     
@@ -105,7 +109,7 @@ public class AllCpuChart extends Application {
 			String line = reader.readLine();
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				long time = (Long.parseLong(st.nextToken()) - first_ts) / 1000; 
+				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				double value = Double.parseDouble(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
@@ -124,13 +128,21 @@ public class AllCpuChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[6];
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.0.169.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.0.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.7.txt"; 
+    	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.34.txt"; 
+    	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.57.txt"; 
+    	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.61.txt"; 
+    	/*
+    	
     	args[0] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.0.169.txt"; 
     	args[1] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.0.txt"; 
     	args[2] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.7.txt"; 
     	args[3] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.34.txt"; 
     	args[4] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.57.txt"; 
     	args[5] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.61.txt"; 
-    	
+    	*/
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);

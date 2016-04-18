@@ -149,6 +149,7 @@ public class InstantThroughputChart extends Application {
 			// line format : 0.00 0.301
 			//     n token :   0    1   
 			String line = reader.readLine();
+			@SuppressWarnings("unused")
 			int i = 0;
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);

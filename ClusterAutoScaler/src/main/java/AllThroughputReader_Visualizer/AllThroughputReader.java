@@ -29,22 +29,20 @@ import javax.management.remote.JMXServiceURL;
 
 public class AllThroughputReader {
 	
-	public static void main(String[] args) throws IOException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, AttributeNotFoundException, InterruptedException{
-				
-		//String contact_point_addr = args[0];
-    	String contact_point_addr = "192.168.0.169";
-		//String contact_point_addr = "127.0.0.1";
-    	check_contact_point_address(contact_point_addr);
-		
-
-		// String dir_path = args[1] 
-		String dir_path = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader";
-		
-    
-    	System.out.println("\n **** CLUSTER NODES Instant Throughput READER ****\n");   	
-       	String port_number = "7199";  
-       	
-        List<String> all_nodes = new LinkedList<String>();
+	@SuppressWarnings("unused")
+	private String contact_point_address;
+	private String jmx_port;
+	private String dir_path;
+	private ThroughputReader[] readers;
+	private ExecutorService executor;
+	private boolean execute;
+	
+	public AllThroughputReader(String contact_point_addr, String jmx_port, String dir_path){
+		this.contact_point_address=contact_point_addr;
+		this.jmx_port=jmx_port;
+		this.dir_path=dir_path;
+		this.execute=false;
+		List<String> all_nodes = new LinkedList<String>();
         all_nodes.add("192.168.0.169");
         all_nodes.add("192.168.1.0");
         all_nodes.add("192.168.1.7");
@@ -52,31 +50,56 @@ public class AllThroughputReader {
         all_nodes.add("192.168.1.57");
         all_nodes.add("192.168.1.61");
        
-        ThroughputReader[] readers = new ThroughputReader[all_nodes.size()]; 
+        this.readers = new ThroughputReader[all_nodes.size()]; 
         int i = 0;
         for( String ip : all_nodes ){
-			ThroughputReader reader = new ThroughputReader(ip, port_number,  dir_path);
-			readers[i] = reader;
+			ThroughputReader reader = new ThroughputReader(ip, this.jmx_port,  this.dir_path);
+			this.readers[i] = reader;
 			i++;
 		}
-        System.out.println("");
-        
-        ExecutorService executor = null;
-        executor = Executors.newFixedThreadPool(readers.length);
-        for(int k = 0; k<1000000000; k++){
-        	
+        this.executor = Executors.newFixedThreadPool(readers.length);
+        Runtime.getRuntime().addShutdownHook(new ShutdownHook(this.readers));
+        System.out.println(" - [AllThroughputReader] Throughput Reader initialized");
+	}
+	
+	public void start_read_throughput(){
+		System.out.println(" - [AllThroughputReader] start reading nodes throughput [ results are saved in dir "+dir_path+"  ]");
+		this.execute=true;
+		while(execute){
 			for (int j = 0; j < readers.length; j++) {
-				ThroughputReader reader = readers[j];
+				ThroughputReader reader = this.readers[j];
 				executor.execute(reader);
 			}
-			Thread.sleep(1000);
-        }
-    	executor.shutdown();
-		
-		// Wait until all threads are finish
-		while (!executor.isTerminated()) {
-			
+			try { Thread.sleep(1000); }
+			catch (InterruptedException e) {e.printStackTrace();}
 		}
+	}
+	
+	public void stop_read_throughput(){
+		this.execute=false;
+		this.executor.shutdown();
+		// Wait until all threads are finish
+		while (!executor.isTerminated()) {}
+	}
+	
+	public static void main(String[] args) throws IOException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, AttributeNotFoundException, InterruptedException{
+				
+
+    	String contact_point_addr = "192.168.0.169";
+    	check_contact_point_address(contact_point_addr);
+
+		String dir_path = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader";
+		
+    
+    	System.out.println("\n **** CLUSTER NODES Instant Throughput READER ****\n");   	
+       	String port_number = "7199";  
+       	
+       	
+       	AllThroughputReader th_reader = new AllThroughputReader(contact_point_addr, port_number, dir_path);
+       	th_reader.start_read_throughput();
+       	
+       
+    	
 	}
 	
 //---------------------------------------------------------------------------------------------	
@@ -133,11 +156,11 @@ public class AllThroughputReader {
 		       this.port_number = port;
 			   String file_name = dir_path+"/throughput_"+this.ip_address+".txt";
 				try {
-					this.writer = new BufferedWriter(new FileWriter(file_name, true));		
+					this.writer = new BufferedWriter(new FileWriter(file_name, false));		
 				} catch (IOException e) {
 					System.err.println("Error in opening: "+file_name);
 				}	
-				System.out.println(" - creater reader for "+this.ip_address);
+				//System.out.println(" - creater reader for "+this.ip_address);
 		   }
 		   
 		   public void run() {
