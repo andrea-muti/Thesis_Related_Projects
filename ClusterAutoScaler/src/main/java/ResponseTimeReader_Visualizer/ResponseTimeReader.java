@@ -67,21 +67,21 @@ public class ResponseTimeReader {
 	public static void main(String[] args){
 		String contact_point_addr = "192.168.0.169";
 		String jmx_port = "7199";
-		String dir_path = "/home/andrea-muti/Scrivania/";
+		String dir_path = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/";
 		ResponseTimeReader reader = new ResponseTimeReader(contact_point_addr, jmx_port, dir_path);
 		reader.start_read_RT();
 	}
 	
 	static class RTReader  implements Runnable{
+		@SuppressWarnings("unused")
 		private boolean execute;
 		private String ip_address;
 		private String port_number;
-		int samples_count;
 		int sampling_interval_msec;
 		BufferedWriter writer;
-		private int samples_count_RT;
 		private String consistency_level;
 		private ConsistencyLevel cl;
+		private int samples_count_RT;
 		private String operation_RT;
 		private Cluster cluster;
 			
@@ -90,9 +90,10 @@ public class ResponseTimeReader {
 			this.ip_address = ip;
 			this.port_number = port;
 			this.operation_RT = "READ";
+			this.samples_count_RT=100;
 			String file_name = dir_path+"/response_times.txt";
 			try {
-				this.writer = new BufferedWriter(new FileWriter(file_name, false));		
+				this.writer = new BufferedWriter(new FileWriter(file_name, true));		
 			} catch (IOException e) {
 				System.err.println("Error in opening: "+file_name);
 			}
@@ -124,18 +125,15 @@ public class ResponseTimeReader {
 		  }
 
 		public void run() {
-			this.execute=true;
-			while( execute ){
-			   /**    LETTURA RESPONSE TIME    **/
-		        double[] response_times = getResponseTimes(port_number, ip_address, samples_count_RT, operation_RT, cl);       
-		        double rt_mean = response_times[0];
-		        double rt_95p = response_times[1];
-		        String content = System.currentTimeMillis() + " " + rt_mean + " " + rt_95p;
-  				try {
-					writer.append(content+"\n");
-					writer.flush();
-				} catch (IOException e) {}	
-			}
+		   /**    LETTURA RESPONSE TIME    **/
+	        double[] response_times = getResponseTimes(port_number, ip_address, samples_count_RT, operation_RT, cl);       
+	        double rt_mean = response_times[0];
+	        double rt_95p = response_times[1];
+	        String content = System.currentTimeMillis() + " " + rt_mean + " " + rt_95p;
+			try {
+				writer.append(content+"\n");
+				writer.flush();
+			} catch (IOException e) {}	
 		}// end run
 		 
 		
@@ -145,7 +143,7 @@ public class ResponseTimeReader {
 			double[] res_times = new double[2];
 			
 			int retry_interval_sec = 3;
-			int window_size = 50;
+			int window_size = 100;
 			
 			int warmup_ops = 100;
 			
@@ -185,7 +183,6 @@ public class ResponseTimeReader {
 				System.err.println("error on key: "+random_key+" | "+e.getMessage());
 				}
 				duration = TimeUnit.MILLISECONDS.convert((System.nanoTime()-start), TimeUnit.NANOSECONDS);
-				
 				ma.newNum(Double.parseDouble(""+duration));
 			}
 			

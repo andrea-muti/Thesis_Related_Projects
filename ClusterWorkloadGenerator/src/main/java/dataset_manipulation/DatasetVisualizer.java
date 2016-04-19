@@ -76,7 +76,8 @@ public class DatasetVisualizer extends Application {
 				StringTokenizer st = new StringTokenizer(line);
 				double time = Double.parseDouble(st.nextToken()); 
 				time = i;
-				double value = Double.parseDouble(st.nextToken()); 
+				int scaling_factor=710;
+				double value = Double.parseDouble(st.nextToken()) * scaling_factor; 
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
 				line = reader.readLine();
@@ -95,9 +96,10 @@ public class DatasetVisualizer extends Application {
 
     public static void main(String[] args) {
     	args = new String[1];
+    	// SCALING FACTOR 710
     	// args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
     	 //args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
-    	 args[0] = "files/datasets/workload_day_7.csv";  // DAY X DATASET FILE
+    	 args[0] = "files/datasets/workload_day_16.csv";  // DAY X DATASET FILE
     	
     	//args[0] = "/home/andrea-muti/Scrivania/clarknet_trace/output_clarknet.txt";  // CLARKNET
     	

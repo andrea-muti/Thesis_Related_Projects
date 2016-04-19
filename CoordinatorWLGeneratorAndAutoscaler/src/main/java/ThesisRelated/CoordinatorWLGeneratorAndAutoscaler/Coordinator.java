@@ -8,13 +8,19 @@ import java.util.concurrent.CountDownLatch;
 
 import AllCPUReader_Visualizer.AllCPUReader;
 import AllThroughputReader_Visualizer.AllThroughputReader;
+import ResponseTimeReader_Visualizer.ResponseTimeReader;
 import ThesisRelated.ClusterWorkloadGenerator.WorkloadGenerator;
 import node_number_monitor.NodeNumberMonitor;
 import ThesisRelated.ClusterAutoScaler.AutoScaler;
 
 /**
- * Coordinator between the WorkloadGenerator and the AutoScaler
- * and the various metrics readers
+ * Coordinator that coordinates the execution of 
+ * 	 - the WorkloadGenerator 
+ * 	 - the AutoScaler
+ * 	 - the monitor of the number of nodes in the cluster
+ *   - the monitor of the throughput of the nodes
+ *   - the monitor of the CPU utilization of the nodes
+ *   - the monitor of the Response Times
  * 
  * @author andrea-muti
  * @since 06-04-2016
@@ -37,12 +43,14 @@ public class Coordinator {
         NumberMonitorRunnable numberMonitorExeutor = new NumberMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
         ThroughputMonitorRunnable throughputMonitorExeutor = new ThroughputMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
         CpuMonitorRunnable cpuMonitorExeutor = new CpuMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
+        RTMonitorRunnable rtMonitorExeutor = new RTMonitorRunnable(latch, contact_point, jmx_port, result_dir_path);
         
         Thread generatorModule = new Thread(generatorExecutor);
         Thread autoscalerModule = new Thread(autoscalerExecutor);
         Thread numberMonitor = new Thread(numberMonitorExeutor);
         Thread throughputMonitor = new Thread(throughputMonitorExeutor);
         Thread cpuMonitor = new Thread(cpuMonitorExeutor);
+        Thread rtMonitor = new Thread(rtMonitorExeutor);
         
         try{ Thread.sleep(4000); }
         catch( Exception e ){}
@@ -53,19 +61,61 @@ public class Coordinator {
         numberMonitor.start();
         throughputMonitor.start();
         cpuMonitor.start();
+        rtMonitor.start();
         
         try{ Thread.sleep(4000); }
         catch( Exception e ){}
         System.out.println("");
         
-        latch.countDown();  // solo dopo che il latch è andato a 0 i due thread partiranno davvero
-        
-       
+        // solo dopo che il latch è andato a 0 i vari thread, che sono in attesa sul latch, partiranno davvero
+        latch.countDown();  
      }
 }
 
 /*--------------------------------------------------------------------------------------------------------------*/
 
+/**
+ * Executor Thread for the monitor of the Response Times
+ */
+class RTMonitorRunnable implements Runnable{
+	
+	private final CountDownLatch latch;
+    private ResponseTimeReader monitor;
+	
+	public RTMonitorRunnable(CountDownLatch latch, String contact_point, String jmx_port, String result_dir_path){
+		this.latch=latch;
+		this.monitor=new ResponseTimeReader(contact_point, jmx_port, result_dir_path);
+	}
+
+	@Override
+	public void run() {
+		try {
+        	System.out.println(" - [RTMonitor Executor] RTMonitor awaiting start");
+            latch.await();          //The thread keeps waiting till it is informed
+        } catch (InterruptedException e) {
+        	System.err.println(" - [RTMonitor Executor] RTMonitor thread awaiting to start has been interrupet");
+            e.printStackTrace();
+            System.err.println(" - [RTMonitor Executor] ABORTING EXECUTION");
+            System.exit(0);
+        }
+        System.out.println(" - [RTMonitor Executor] start monitoring Response Times of nodes");
+        this.monitor.start_read_RT();
+        System.out.println(" - [RTMonitorExecutor] stop monitoring Response Times of nodes");
+	}
+	
+	public void terminate(){
+    	this.monitor.stop_read_RT();
+    	System.out.println(" - [RTMonitorExecutor] RTMonitor terminated");
+    	Thread.currentThread().interrupt();
+    }
+	
+}
+
+/*--------------------------------------------------------------------------------------------------------------*/
+
+/**
+ * Executor Thread for the monitor of nodes CPU Utilization
+ */
 class CpuMonitorRunnable implements Runnable{
 	
 	private final CountDownLatch latch;
@@ -92,10 +142,20 @@ class CpuMonitorRunnable implements Runnable{
         System.out.println(" - [CpuMonitor Executor] stop monitoring CPU utilization of nodes");
 	}
 	
+	public void terminate(){
+    	this.monitor.stop_read_cpu();
+    	System.out.println(" - [CpuMonitor Executor] CpuMonitor terminated");
+    	Thread.currentThread().interrupt();
+    }
+	
 }
+
 
 /*--------------------------------------------------------------------------------------------------------------*/ 
 
+/**
+ * Executor Thread for the Monitor of the Throughput
+ */
 class ThroughputMonitorRunnable implements Runnable{
 	
 	private final CountDownLatch latch;
@@ -122,10 +182,19 @@ class ThroughputMonitorRunnable implements Runnable{
         System.out.println(" - [ThroughputMonitor Executor] stop monitoring throughput of nodes");
 	}
 	
+	public void terminate(){
+    	this.monitor.stop_read_throughput();
+    	System.out.println(" - [ThroughputMonitor Executor] ThroughputMonitor terminated");
+    	Thread.currentThread().interrupt();
+    }
+	
 }
 
 /*--------------------------------------------------------------------------------------------------------------*/ 
 
+/**
+ * Executor Thread for the Monitor of the Number of Nodes
+ */
 class NumberMonitorRunnable implements Runnable{
 	
 	private final CountDownLatch latch;
@@ -151,6 +220,12 @@ class NumberMonitorRunnable implements Runnable{
         this.monitor.start_monitor();
         System.out.println(" - [NodeNumberMonitor Executor] stop monitoring the number of nodes");
 	}
+	
+	public void terminate(){
+    	this.monitor.stop_monitor();
+    	System.out.println(" - [NodeNumberMonitor Executor] NodeNumberMonitor terminated");
+    	Thread.currentThread().interrupt();
+    }
 	
 }
 
@@ -216,6 +291,7 @@ class GeneratorExecutorRunnable implements Runnable{
         this.generator.generateWorkload();
         System.out.println(" - [WorkloadGenerator Executor] workload generation completed");
     }
+    
 }
 
 // -------------------------------------------------------------------------------------

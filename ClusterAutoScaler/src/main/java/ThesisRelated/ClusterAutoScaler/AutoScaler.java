@@ -497,7 +497,7 @@ public class AutoScaler{
         String conf_man_prop_path = "resources/properties_files/propertiesCM.properties";
         int single_duration_sec = 12; // 1 minuto vero = 6 minuti simulati
         int scaling_factor = 810; 
-        int initial_shift_num_hours =6;
+        int initial_shift_num_hours =0;
         AutoScaler scaler = new AutoScaler( autoscaler_properties_path, predictor_properties_path, 
         		conf_man_prop_path, single_duration_sec, scaling_factor, initial_shift_num_hours );
         scaler.start();
