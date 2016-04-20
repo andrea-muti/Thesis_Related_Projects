@@ -143,7 +143,7 @@ public class AllCPUReader {
 				} catch (IOException e) {
 					System.err.println("Error in opening: "+file_name);
 				}	
-				System.out.println(" - creater reader for "+this.ip_address);
+				//System.out.println(" - creater reader for "+this.ip_address);
 		   }
 		   
 		   public void run() {

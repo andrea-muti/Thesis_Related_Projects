@@ -117,8 +117,8 @@ public class ResponseTimesChart extends Application {
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
+				//line = reader.readLine();
+				//line = reader.readLine();
 			}
 			reader.close();
 			lineChart.getData().add(seriesMean);

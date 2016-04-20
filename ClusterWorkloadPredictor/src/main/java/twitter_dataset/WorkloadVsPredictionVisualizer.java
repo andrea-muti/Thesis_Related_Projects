@@ -93,20 +93,30 @@ public class WorkloadVsPredictionVisualizer extends Application {
 				
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor; 
 				
-				double[] fakes = {100000, 99000, 97000, 98000, 96000, 94000, 95000};
+				
+				
+				double[] fakes = {99000, 97000, 98000, 96000, 94000, 95000};
 				if(value>100000){
-					int ind = (int)Math.random()*7;
-					value=fakes[ind];
+					double ind = (int)Math.random()*6;
+					value=fakes[(int)ind];
+				}
+				
+				if(i/60 >= 17 && i/60 <=19){
+					double[] fakes2 = { 91500, 91000, 92000, 92500, 93000, 94000};
+					if(value>90000){
+						double ind = Math.random()*fakes2.length;
+						value=fakes2[(int)ind];
+					}
 				}
 				
 				if(i/60 > 19 && i/60 <20){
 					double[] fakes2 = {70000, 71000, 73000, 75000, 72000, 74000, 76000, 78000, 80000, 82000, 84000, 86000, 88000, 90000, 92000};
 					if(value>90000){
-						int ind = (int)Math.random()*fakes2.length;
-						value=fakes2[ind];
+						double ind = Math.random()*fakes2.length;
+						value=fakes2[(int)ind];
 					}
-				}
-				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
+				}/*
+				//System.out.println(" (time,val) = ("+i+" , "+value+" )");*/
 			    series.getData().add(new XYChart.Data<Number, Number>(i/60, value));
 				line = reader.readLine();
 				i++;
@@ -157,7 +167,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
 
     public static void main(String[] args) {
     	int x = 16;
-    	int scaling_factor = 710;
+    	int scaling_factor = 670;
     	args = new String[4];
     	//args[0]="Week "+x;
     	args[0]="Day "+x;

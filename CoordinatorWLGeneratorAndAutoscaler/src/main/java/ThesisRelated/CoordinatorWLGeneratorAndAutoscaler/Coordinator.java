@@ -32,7 +32,7 @@ public class Coordinator {
         System.out.println(" *-- TEST COORDINATOR --*");
         System.out.println(" *----------------------*\n");
         
-        int number_hour_initial_shift = 0;
+        int number_hour_initial_shift = 16;
         String contact_point = "192.168.0.169";
         String jmx_port = "7199";
         String result_dir_path = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/";

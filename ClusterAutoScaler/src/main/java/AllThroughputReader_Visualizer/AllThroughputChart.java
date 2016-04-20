@@ -128,7 +128,7 @@ public class AllThroughputChart extends Application {
 				
 				line = reader.readLine();
 				line = reader.readLine();
-				line = reader.readLine();
+				//line = reader.readLine();
 				
 			}
 			reader.close();
@@ -161,7 +161,7 @@ public class AllThroughputChart extends Application {
 					j++;
 					line = reader.readLine();
 					line = reader.readLine();
-					line = reader.readLine();
+					//line = reader.readLine();
 					
 				}
 				reader.close();
@@ -200,8 +200,8 @@ public class AllThroughputChart extends Application {
 				double value = Double.parseDouble(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
+				//line = reader.readLine();
+				//line = reader.readLine();
 		
 			}
 			reader.close();

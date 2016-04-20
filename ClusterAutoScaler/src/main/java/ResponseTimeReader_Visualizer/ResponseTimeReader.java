@@ -93,7 +93,7 @@ public class ResponseTimeReader {
 			this.samples_count_RT=100;
 			String file_name = dir_path+"/response_times.txt";
 			try {
-				this.writer = new BufferedWriter(new FileWriter(file_name, true));		
+				this.writer = new BufferedWriter(new FileWriter(file_name, false));		
 			} catch (IOException e) {
 				System.err.println("Error in opening: "+file_name);
 			}

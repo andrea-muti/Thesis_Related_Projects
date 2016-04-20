@@ -180,7 +180,7 @@ public class ClusterWorkloadPredictor {
        try {
     	   ClusterWorkloadPredictor predictor = new ClusterWorkloadPredictor();
        
-    	   String outfile_path = "resources/datasets/predictions/prediction_day_27_time_load.csv"; 
+    	   String outfile_path = "resources/datasets/predictions/prediction_day_16_time_load.csv"; 
 		 
     	   PrintWriter writer = new PrintWriter(outfile_path, "UTF-8") ;	
 		
