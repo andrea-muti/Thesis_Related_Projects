@@ -78,7 +78,6 @@ public class AutoScaler{
 			System.exit(0);
 		}
 		
-
 		this.min_num_nodes = Integer.parseInt(properties.getProperty("min_num_nodes").trim());
 		this.max_num_nodes = Integer.parseInt(properties.getProperty("max_num_nodes").trim());
 		
@@ -212,8 +211,6 @@ public class AutoScaler{
 		long elapsed_sec = (long) time_tracker.getElapsed();
 		long wl_now_ts = this.initial_wl_tstamp + (this.number_hours_initial_shift*60*60*1000) + (1000*elapsed_sec);
 		
-		//System.out.println("[DEBUG] la decided scaling action appena eseguita doveva finire alle "+this.convert_ts_to_string_date(decided_scaling_action_expected_end));
-		//System.out.println("[DEBUG] ora sono le "+this.convert_ts_to_string_date(wl_now_ts));
 		boolean first=true;
 		while( wl_now_ts < decided_scaling_action_expected_end ){
 			if(first){
@@ -303,7 +300,6 @@ public class AutoScaler{
 	}
 	
 	private ScalingAction decide_scaling_action(long now_ts_wl_time){
-		
 		int current = this.current_node_number;
 		int max = this.max_num_nodes;
 		int min = this.min_num_nodes;
@@ -352,7 +348,6 @@ public class AutoScaler{
 				}
 				else{ System.out.println("    - adding "+(max-current-i)+" nodes is NOT required\n"); }
 			}
-			
 		}
 		
 		// mi è permesso fare un eventuale scale IN ?
@@ -396,57 +391,9 @@ public class AutoScaler{
 		if(decided_scaling_action==null){
 			decided_scaling_action=new ScalingAction(AutoScaleConstants.KEEP_CURRENT, 0);
 		}
-		
 		return decided_scaling_action;
-		
 	}
 	
-	/*
-	private ScalingAction decide_scaling_action_old(long wl_now_ts){
-		
-		long wl_next_15min_ts = wl_now_ts + FIFTEEN_MIN;
-		long wl_next_half_hour_ts = wl_now_ts + HALF_HOUR;
-		long wl_next_hour_ts = wl_now_ts + ONE_HOUR;
-			
-		double current_predicted_load = this.predictor.predict_load_at_time(wl_now_ts) * (this.scaling_factor);
-		double next_15min_predicted_load = this.predictor.predict_load_at_time(wl_next_15min_ts) * (this.scaling_factor);
-		double next_half_hour_predicted_load  = this.predictor.predict_load_at_time(wl_next_half_hour_ts) * (this.scaling_factor);
-		double next_hour_predicted_load  = this.predictor.predict_load_at_time(wl_next_hour_ts) * (this.scaling_factor);
-		
-		current_predicted_load = Double.parseDouble(String.format("%.3f", current_predicted_load).replace(",", "."));
-		next_15min_predicted_load = Double.parseDouble(String.format("%.3f", next_15min_predicted_load).replace(",", "."));
-		next_half_hour_predicted_load = Double.parseDouble(String.format("%.3f", next_half_hour_predicted_load).replace(",", "."));
-		next_hour_predicted_load = Double.parseDouble(String.format("%.3f", next_hour_predicted_load).replace(",", "."));
-		
-		int required_now = this.compute_required_node_number(current_predicted_load);
-		int required_15min = this.compute_required_node_number(next_15min_predicted_load);
-		int required_half_hour = this.compute_required_node_number(next_half_hour_predicted_load);
-		int required_one_hour = this.compute_required_node_number(next_hour_predicted_load);
-		
-		String wl_now_date = convert_ts_to_string_date(wl_now_ts);
-		System.out.println("\n - [AutoScaler] workload time : " + wl_now_date);
-		System.out.println("       - predicted current load    : "+current_predicted_load+" req/sec | num nodes required : "+required_now);
-		System.out.println("       - predicted next 15min load : "+next_15min_predicted_load+" req/sec | num nodes required : "+required_15min);
-		System.out.println("       - predicted next 30min load : "+next_half_hour_predicted_load+" req/sec | num nodes required : "+required_half_hour);
-		System.out.println("       - predicted next 60min load : "+next_hour_predicted_load+" req/sec | num nodes required : "+required_one_hour);
-		
-		// DOBBIAMO DECIDERE COSA FARE PER ESSERE OK TRA 1 ORA
-		ScalingAction action;
-		if(this.current_node_number > required_one_hour){ // SCALE IN
-			int how_many_to_remove = this.current_node_number - required_one_hour;
-			action = new ScalingAction(AutoScaleConstants.SCALE_IN, how_many_to_remove);
-		}
-		else if(this.current_node_number < required_one_hour){  // SCALE OUT
-			int how_many_to_add = required_one_hour - this.current_node_number;
-			action = new ScalingAction(AutoScaleConstants.SCALE_OUT, how_many_to_add);
-		}
-		else{ // KEEP CURRENT
-			action = new ScalingAction(AutoScaleConstants.KEEP_CURRENT, 0);
-		}
-		return action;
-		
-	}
-	*/
 	
 	private int compute_required_node_number(double load){
 		int n = this.max_num_nodes;
@@ -497,11 +444,10 @@ public class AutoScaler{
         String conf_man_prop_path = "resources/properties_files/propertiesCM.properties";
         int single_duration_sec = 12; // 1 minuto vero = 6 minuti simulati
         int scaling_factor = 810; 
-        int initial_shift_num_hours =0;
+        int initial_shift_num_hours = 0;
         AutoScaler scaler = new AutoScaler( autoscaler_properties_path, predictor_properties_path, 
         		conf_man_prop_path, single_duration_sec, scaling_factor, initial_shift_num_hours );
         scaler.start();
     }
 
-    
 }

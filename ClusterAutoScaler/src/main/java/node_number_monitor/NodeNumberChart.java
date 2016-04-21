@@ -43,14 +43,16 @@ public class NodeNumberChart extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [ minutes ]");
+        xAxis.setLabel("Time [ hours ]");
+        xAxis.setAutoRanging(false);
         xAxis.setTickUnit(1);
         xAxis.setMinorTickCount(0);
+        xAxis.setUpperBound(24);
         
 		yAxis.setLabel("Number Of Nodes");
 		yAxis.setTickUnit(1);
 		yAxis.setAutoRanging(false);
-		yAxis.setUpperBound(8);
+		yAxis.setUpperBound(7);
 		yAxis.setMinorTickCount(0);
 		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
 			
@@ -124,6 +126,7 @@ public class NodeNumberChart extends Application {
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
 				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
+				time = time/60.0;
 				int value = Integer.parseInt(st.nextToken()); 
 			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
 				line = reader.readLine();
@@ -140,7 +143,7 @@ public class NodeNumberChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[1];
-    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cluster_node_number.txt"; 
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cluster_node_number.txt"; 
 
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

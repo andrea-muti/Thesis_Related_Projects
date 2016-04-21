@@ -187,7 +187,6 @@ class ThroughputMonitorRunnable implements Runnable{
     	System.out.println(" - [ThroughputMonitor Executor] ThroughputMonitor terminated");
     	Thread.currentThread().interrupt();
     }
-	
 }
 
 /*--------------------------------------------------------------------------------------------------------------*/ 
@@ -226,9 +225,7 @@ class NumberMonitorRunnable implements Runnable{
     	System.out.println(" - [NodeNumberMonitor Executor] NodeNumberMonitor terminated");
     	Thread.currentThread().interrupt();
     }
-	
 }
-
 
 
 //---------------------------------------------------------------------------------------------------------
@@ -291,7 +288,6 @@ class GeneratorExecutorRunnable implements Runnable{
         this.generator.generateWorkload();
         System.out.println(" - [WorkloadGenerator Executor] workload generation completed");
     }
-    
 }
 
 // -------------------------------------------------------------------------------------
@@ -336,7 +332,6 @@ class AutoscalerExecutorRunnable implements Runnable{
         System.out.println(" - [AutoScaler Executor] AutoScaler starts execution");
         this.autoscaler.start();
         System.out.println(" - [AutoScaler Executor] AutoScaler execution end");
-        
     }
     
     
@@ -366,5 +361,4 @@ class AutoscalerExecutorRunnable implements Runnable{
     	System.out.println(" - [AutoScaler Executor] AutoScaler terminated");
     	Thread.currentThread().interrupt();
     }
-
 }

@@ -1,6 +1,5 @@
 package twitter_dataset;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
-
 
 public class WorkloadVsPredictionVisualizer extends Application {
 
@@ -42,8 +40,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
         final NumberAxis yAxis = new NumberAxis();
 
         yAxis.setTickUnit(10000);
-        
-        
+                
         xAxis.setLabel("Time [ hours ]");
         xAxis.setAutoRanging(false);
         xAxis.setTickUnit(1.0);
@@ -51,25 +48,20 @@ public class WorkloadVsPredictionVisualizer extends Application {
 		xAxis.setMinorTickCount(2);
         
 		yAxis.setLabel("Load [ tpm ]");
-
-        final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
-        
+		yAxis.setAutoRanging(false);
+		yAxis.setUpperBound(100000);
+	
+        final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);       
        
         lineChart.setTitle("Twitter Workload vs Prediction [ "+period+" ]");
-        lineChart.setCreateSymbols(false);  
-      
+        lineChart.setCreateSymbols(false);       
         
         add_line_to_chart_load(lineChart, file_paths.get(0), "real workload", scaling_factor);
         add_line_to_chart_pred(lineChart, file_paths.get(1), "predicted workload", scaling_factor);
         
-        
-      
         Scene scene  = new Scene(lineChart,800,600);       
-       
         stage.setScene(scene);
-        scene.getStylesheets().add(
-                getClass().getResource("chart.css").toExternalForm()
-              );
+        scene.getStylesheets().add(getClass().getResource("chart.css").toExternalForm());
         stage.show();
     }
     
@@ -87,35 +79,17 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			String line = reader.readLine();
 			double i = 0;
 			while( line!=null ){
-				if( i<1){ i++; line = reader.readLine(); continue; }
+				if( i<1 ){ i++; line = reader.readLine(); continue; }
 				StringTokenizer st = new StringTokenizer(line);
 				st.nextToken(); 
-				
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor; 
-				
-				
-				
+
 				double[] fakes = {99000, 97000, 98000, 96000, 94000, 95000};
 				if(value>100000){
 					double ind = (int)Math.random()*6;
 					value=fakes[(int)ind];
 				}
 				
-				if(i/60 >= 17 && i/60 <=19){
-					double[] fakes2 = { 91500, 91000, 92000, 92500, 93000, 94000};
-					if(value>90000){
-						double ind = Math.random()*fakes2.length;
-						value=fakes2[(int)ind];
-					}
-				}
-				
-				if(i/60 > 19 && i/60 <20){
-					double[] fakes2 = {70000, 71000, 73000, 75000, 72000, 74000, 76000, 78000, 80000, 82000, 84000, 86000, 88000, 90000, 92000};
-					if(value>90000){
-						double ind = Math.random()*fakes2.length;
-						value=fakes2[(int)ind];
-					}
-				}/*
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");*/
 			    series.getData().add(new XYChart.Data<Number, Number>(i/60, value));
 				line = reader.readLine();
@@ -143,15 +117,10 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			String line = reader.readLine();
 			double i = 0;
 			while( line!=null ){
-			
 				StringTokenizer st = new StringTokenizer(line);
 				st.nextToken(); 
-		
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor ; 
-				//if(value>100000){ System.out.println(" (time,val) = ("+i+" , "+value+" )");}
-				//for(int j=0; j<61;j++){
-					series.getData().add(new XYChart.Data<Number, Number>((i/60), value));
-				//}
+				series.getData().add(new XYChart.Data<Number, Number>((i/60), value));
 				line = reader.readLine();
 				i++;
 			}
@@ -175,7 +144,6 @@ public class WorkloadVsPredictionVisualizer extends Application {
     	args[2]="/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadPredictor/"
     			+ "resources/datasets/single_day_workloads/workload_day_"+x+".csv"; // carico giorno vero
     	args[3]="resources/datasets/predictions/prediction_day_"+x+"_time_load.csv";  // carico giorno predicted
-    	
     	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

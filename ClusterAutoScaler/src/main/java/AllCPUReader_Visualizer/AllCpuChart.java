@@ -46,7 +46,7 @@ public class AllCpuChart extends Application {
         final NumberAxis yAxis = new NumberAxis();
 
         xAxis.setLabel("Time [ hours ]");
-        //xAxis.setAutoRanging(false);
+        xAxis.setAutoRanging(false);
         xAxis.setTickUnit(1.0);
 		xAxis.setUpperBound(24);
 		xAxis.setMinorTickCount(2);
@@ -135,9 +135,16 @@ public class AllCpuChart extends Application {
 				double value = Double.parseDouble(st.nextToken()); 
 				
 				// trucchetto per far sembrare tutte uguali le cpu
-				if(name.equals("vm0")){value=value-5;}
+				//if(name.equals("vm0")){value=value-3;}
 			    
 				series.getData().add(new XYChart.Data<Number, Number>(time, value));			
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
@@ -160,12 +167,12 @@ public class AllCpuChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[6];
-    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.0.169.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.0.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.7.txt"; 
-    	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.34.txt"; 
-    	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.57.txt"; 
-    	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/cpu_192.168.1.61.txt"; 
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.0.169.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.0.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.7.txt"; 
+    	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.34.txt"; 
+    	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.57.txt"; 
+    	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.61.txt"; 
     	/*
     	
     	args[0] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.0.169.txt"; 

@@ -31,6 +31,7 @@ public class ClusterScriptExecutor {
 	
 		try{
 			//System.out.println(" - sto per invocare exec startup script exec comm : "+exec_command);
+			@SuppressWarnings("unused")
 			Process starter_process = Runtime.getRuntime().exec(exec_command);
 			//System.out.println(" -  exec startup script finita");
 		}

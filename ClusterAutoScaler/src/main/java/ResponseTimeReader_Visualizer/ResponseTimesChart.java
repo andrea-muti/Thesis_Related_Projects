@@ -39,18 +39,22 @@ public class ResponseTimesChart extends Application {
     	}
 	    
     
-        stage.setTitle("Response Times");
+        stage.setTitle("Mean and 95th Percentile Response Times");
 
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
         xAxis.setLabel("Time [ minutes ]");
-        xAxis.setTickUnit(10);
+        xAxis.setAutoRanging(false);
+        xAxis.setUpperBound(1440);
+        xAxis.setTickUnit(60);
 		yAxis.setLabel("Response Time [ msec ]");
+		yAxis.setAutoRanging(false);
+        yAxis.setUpperBound(30);
 
         final AreaChart<Number,Number> lineChart = new AreaChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Response Times");
+        lineChart.setTitle("Mean and 95th Percentile Response Times");
         lineChart.setCreateSymbols(false);  
         
         long first_ts = get_first_ts(file_paths);
@@ -110,10 +114,12 @@ public class ResponseTimesChart extends Application {
 				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				double valueMean = Double.parseDouble(st.nextToken()); 
 				double valuep95 = Double.parseDouble(st.nextToken()); 
-				if(valueMean>25.0){valueMean=25.0;}
-				if(valuep95>25.0){valuep95=25.0;}
+				if(valueMean>12.0){valueMean=12.0;}
+				if(valuep95>50.0){valuep95=50.0;}
 			    seriesMean.getData().add(new XYChart.Data<Number, Number>(time, valueMean));			
 			    seriesp95.getData().add(new XYChart.Data<Number, Number>(time, valuep95));			
+				line = reader.readLine();
+				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
@@ -133,17 +139,8 @@ public class ResponseTimesChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[1];
-    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/response_times.txt"; 
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/response_times.txt"; 
     	
-    	/*
-    	
-    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.0.169.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.0.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.7.txt"; 
-    	args[3] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.34.txt"; 
-    	args[4] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.57.txt"; 
-    	args[5] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.61.txt"; 
-    	*/
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
