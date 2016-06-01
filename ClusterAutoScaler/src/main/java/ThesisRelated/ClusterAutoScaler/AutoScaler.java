@@ -393,8 +393,7 @@ public class AutoScaler{
 		}
 		return decided_scaling_action;
 	}
-	
-	
+
 	private int compute_required_node_number(double load){
 		int n = this.max_num_nodes;
 		for(int i = this.min_num_nodes; i<=this.max_num_nodes; i++){
@@ -442,7 +441,7 @@ public class AutoScaler{
         String autoscaler_properties_path = "resources/properties_files/autoscaler.properties";
         String predictor_properties_path = "resources/properties_files/predictor.properties";
         String conf_man_prop_path = "resources/properties_files/propertiesCM.properties";
-        int single_duration_sec = 12; // 1 minuto vero = 6 minuti simulati
+        int single_duration_sec = 12; // 1 minuto vero = 5 minuti simulati
         int scaling_factor = 810; 
         int initial_shift_num_hours = 0;
         AutoScaler scaler = new AutoScaler( autoscaler_properties_path, predictor_properties_path, 
