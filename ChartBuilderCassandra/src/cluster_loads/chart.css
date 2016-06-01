@@ -1,0 +1,16 @@
+/** file: chart.css
+  */
+  
+.chart {
+    -fx-background-color: white;
+}
+.chart-plot-background {
+    -fx-background-color: white;
+}
+.chart-legend {
+   -fx-background-color:  white;
+   -fx-padding:  30px, 1px, 1px, 1px;
+}
+.chart-vertical-grid-lines {
+    -fx-stroke: white;
+}

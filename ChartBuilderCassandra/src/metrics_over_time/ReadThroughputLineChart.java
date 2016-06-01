@@ -47,8 +47,7 @@ public class ReadThroughputLineChart extends Application {
         lineChart.setCreateSymbols(false);  
                 
         add_line_to_chart(lineChart, file_paths.get(0), "Client Read Throughput");
-        add_line_to_chart(lineChart, file_paths.get(1), "Node Read Throughput");	
-
+ 
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
@@ -70,9 +69,6 @@ public class ReadThroughputLineChart extends Application {
 			
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				st.nextToken(); // 1.0
-				st.nextToken(); // GB 
-				st.nextToken(); // :
 				double value = Double.parseDouble(st.nextToken()); // value
 				
 			    series.getData().add(new XYChart.Data<Number, Number>(seconds, value));
@@ -91,11 +87,8 @@ public class ReadThroughputLineChart extends Application {
 
 
     public static void main(String[] args) {
-    	if(args.length<2){
-    		System.err.println("Error: path to the client read throughput and to node read "
-    				+ "throughput data files are required as argument");
-    		System.exit(-1);
-    	}
+    	args = new String[1];
+    	args[0] = "/home/andrea-muti/Scrivania/Dati_Latenze/client_read_throughputs_3_nodes.txt";
         launch(args);
     }
 }

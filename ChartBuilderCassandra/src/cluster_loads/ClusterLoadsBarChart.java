@@ -24,7 +24,8 @@ public class ClusterLoadsBarChart extends Application {
     final static String nodes_5 = "5 Nodes";
     final static String nodes_6 = "6 Nodes";
  
-    @Override public void start(Stage stage) {
+    @SuppressWarnings("unused")
+	@Override public void start(Stage stage) {
     	
     	Parameters parameters = getParameters();    
 	    List<String> rawArguments = parameters.getRaw();
@@ -63,21 +64,26 @@ public class ClusterLoadsBarChart extends Application {
         stage.setTitle("Cluster Load Chart");
         
         final CategoryAxis xAxis = new CategoryAxis();
+      
         final NumberAxis yAxis = new NumberAxis();
+        yAxis.setAutoRanging(false);
+        yAxis.setTickUnit(100);
+        yAxis.setMinorTickLength(0);
+        yAxis.setUpperBound(1100);
         
         final BarChart<String,Number> bc = new BarChart<String,Number>(xAxis,yAxis);
         
-        bc.setTitle("Cluster Load Chart\nInitial Cluster Load: "+load_label);
+        //bc.setTitle("Cluster Load Chart\nInitial Cluster Load: "+load_label);
         
-        xAxis.setLabel("Node");       
-        yAxis.setLabel("Load ["+load_label.substring(load_label.length()-2, load_label.length())+"]");
+        xAxis.setLabel("Cluster Configuration [ # nodes ]");       
+        yAxis.setLabel("Dataset Portion Size [ MB ]");
          
         Scene scene  = new Scene(bc,800,600);
         
         for(int i=1; i<=n_nodes;i++){
     		LinkedList<Double> list = map.get(""+i);
     		XYChart.Series<String,Number> series = new XYChart.Series<String,Number>();
-            series.setName("Nodo "+i);       
+            series.setName("Node "+i+" ");       
             
             if(list.size()==4){
             	series.getData().add(new XYChart.Data<String,Number>(nodes_3, list.get(0)));
@@ -103,10 +109,12 @@ public class ClusterLoadsBarChart extends Application {
         
         
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     
-    private void populate_map(Map<String, LinkedList<Double>> map, List<String> file_paths) {
+    @SuppressWarnings("unused")
+	private void populate_map(Map<String, LinkedList<Double>> map, List<String> file_paths) {
     	for(String file_name : file_paths){
 	    	try {
 				BufferedReader reader = new BufferedReader(new FileReader(file_name));
@@ -122,12 +130,13 @@ public class ClusterLoadsBarChart extends Application {
 							st.nextToken(); // IP addr non mi serve
 							Double load = Double.parseDouble(st.nextToken().replace(",", "."));
 							String load_label = st.nextToken();
-							if(load_label.equals("MB")){
+							/*if(load_label.equals("MB")){
 								load = load/1024;
 							}
 							else if(load_label.equals("KB")){
 								load = load/1024/1024;
-							}
+							}*/
+				
 							map.get(""+index_node).add(load);
 						}
 					}

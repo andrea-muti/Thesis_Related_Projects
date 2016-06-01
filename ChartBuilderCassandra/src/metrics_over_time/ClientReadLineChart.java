@@ -48,7 +48,7 @@ public class ClientReadLineChart extends Application {
         lineChart.setCreateSymbols(false);  
                 
         add_line_to_chart(lineChart, file_paths.get(0), "Mean Latency");
-        //add_line_to_chart(lineChart, file_paths.get(1), "99.9th Percentile Latency");	
+        add_line_to_chart(lineChart, file_paths.get(1), "95th Percentile Latency");	
 
         Scene scene  = new Scene(lineChart,800,600);       
        
@@ -64,25 +64,23 @@ public class ClientReadLineChart extends Application {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
 			
-			// line format : 1.0 GB : 27358.855 microseconds
-			//     n token :  0   1 2  3              4  
+			// line format : 27358.855 microseconds
+			//     n token :  0           1 
 			String line = reader.readLine();
 			int seconds = 0;
 			
 			while(line!=null){
 				StringTokenizer st = new StringTokenizer(line);
-				st.nextToken(); // 1.0
-				st.nextToken(); // GB 
-				st.nextToken(); // :
+				
 				double value = Double.parseDouble(st.nextToken()); // value
 				String unit = st.nextToken(); // microseconds
-				if(unit.equals("microseconds")){ value = value/1000; }
-				else if(unit.equals("seconds")){ value = value*1000; }
+				if(unit.equals("microseconds")){ value = value/1000.0; }
+				else if(unit.equals("seconds")){ value = value*1000.0; }
 				
 			    series.getData().add(new XYChart.Data<Number, Number>(seconds, value));
 				
 				line = reader.readLine();
-				seconds += 3;
+				seconds += 2;
 			}
 			reader.close();
 			lineChart.getData().add(series);
@@ -95,8 +93,11 @@ public class ClientReadLineChart extends Application {
 
 
     public static void main(String[] args) {
+    	args = new String[2];
+    	args[0] = "/home/andrea-muti/Scrivania/Dati_Latenze/client_read_latencies_3_nodes.txt";
+    	args[1] = "/home/andrea-muti/Scrivania/Dati_Latenze/percentile_95_client_read_latencies_3_nodes.txt";
     	if(args.length<2){
-    		System.err.println("Error: path to the mean client read latencies and to 99.9th percentile "
+    		System.err.println("Error: path to the mean client read latencies and to 95th percentile "
     				+ "client read latencies data files are required as argument");
     		System.exit(-1);
     	}
