@@ -59,6 +59,7 @@ public class CPUByIR extends Application {
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     
@@ -96,16 +97,24 @@ public class CPUByIR extends Application {
 			System.out.println(" * computing averages");
 			Map<Integer, Double> avg_throughput_by_IR = HashMapUtils.compute_averages(cpus_by_IR);
 			
+			LinkedList<Pair> list = new LinkedList<Pair>();
+
+			
 			Iterator<Entry<Integer,Double>> iter2 = avg_throughput_by_IR.entrySet().iterator();
 			while(iter2.hasNext()){
 				Entry<Integer,Double> entry = iter2.next();
 				double IR = entry.getKey();
 				double TH = entry.getValue();
 				series.getData().add(new XYChart.Data<Number, Number>(IR, TH));
+				if(num==6){
+					Pair.addValue(list, new Pair(IR, TH));
+				}
 			}
 			
 			max_avg = max_avg / i;
 			System.out.println(" * max avg cpu for "+name+" : "+max_avg+" %");
+			
+			Pair.printList(list);
 			
 			lineChart.getData().add(series);
 			System.out.println(" * new line inserted");

@@ -58,6 +58,7 @@ public class RTmeanByIR extends Application {
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     

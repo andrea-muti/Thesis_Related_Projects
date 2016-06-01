@@ -38,18 +38,25 @@ public class ThroughputByIR extends Application {
     
         stage.setTitle("Throughput VS Input Rate");
 
-        final NumberAxis xAxis = new NumberAxis(0000,210000,10000);
+       // final NumberAxis xAxis = new NumberAxis(0000,210000,10000);
+        final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Input Rate [ requests/second ]");
-        //xAxis.setTickUnit(10);
+        xAxis.setLabel("Input Rate [ requests / second ]");
+        xAxis.setAutoRanging(false);
+        xAxis.setTickUnit(20000);
+		xAxis.setUpperBound(220000);
+		xAxis.setMinorTickCount(2);
         
-		yAxis.setLabel("Throughput [ transactions/second ]");
-		yAxis.setTickUnit(2);
+		yAxis.setLabel("Throughput [ transactions / second ]");
+		yAxis.setAutoRanging(false);
+		yAxis.setMinorTickCount(1);
+		yAxis.setUpperBound(140000);
+		yAxis.setTickUnit(10000);
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Throughput VS Input Rate");
+        //lineChart.setTitle("Throughput VS Input Rate");
         lineChart.setCreateSymbols(false);  
             
         add_line_to_chart(lineChart, file_paths.get(0), "3 nodes", 3);
@@ -62,6 +69,7 @@ public class ThroughputByIR extends Application {
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
+        scene.getStylesheets().add( getClass().getResource("chart.css").toExternalForm() );
         stage.show();
     }
     

@@ -81,6 +81,7 @@ public class ThroughputDuringJoining extends Application {
 					double TH = Double.parseDouble(st.nextToken());
 					series.getData().add(new XYChart.Data<Number, Number>(time, TH));
 					time=time+15;
+					if(time>750) break;
 				}
 				line = reader.readLine();
 			}
@@ -116,6 +117,7 @@ public class ThroughputDuringJoining extends Application {
 					
 					seriesnodi.getData().add(new XYChart.Data<Number, Number>(time, nodi*10000));
 					time=time+15;
+					if(time>750) break;
 				}
 				line = reader.readLine();
 			}
