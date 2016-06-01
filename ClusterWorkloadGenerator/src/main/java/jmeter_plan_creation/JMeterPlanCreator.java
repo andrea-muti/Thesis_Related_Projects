@@ -1,6 +1,8 @@
 package jmeter_plan_creation;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
@@ -146,7 +148,12 @@ public class JMeterPlanCreator {
 				StringTokenizer st = new StringTokenizer(line,this.separator);
 				st.nextToken(); 						// primo token = tstamp
 				String stringtoken = st.nextToken(); 	// secondo token = load value
-				int value = Integer.parseInt(stringtoken);
+				int value;
+				try{
+					value = Integer.parseInt(stringtoken);
+				}catch(NumberFormatException e){
+					value = (int) Double.parseDouble(stringtoken);
+				}
 				
 				value = (value * this.scaling_factor);
 				value = (value / this.number_of_jmeter_slaves) ;
@@ -165,7 +172,7 @@ public class JMeterPlanCreator {
 			}
 			
 			reader.close();
-		}catch( Exception e ) {}
+		}catch( Exception e ) {e.printStackTrace();}
 		
 		return workload_section;
 	}
@@ -179,6 +186,16 @@ public class JMeterPlanCreator {
 		
 		String complete_plan = initial_section+"\n"+workload_section+"\n"+ending_section;
 		try{
+			try{
+				PrintWriter writer = new PrintWriter(output_file_path, "UTF-8") ;	
+				writer.close();
+			}
+			catch(FileNotFoundException e){
+				File f = new File(output_file_path);
+				f.getParentFile().mkdirs(); 
+				f.createNewFile();
+				System.out.println("file should be created at "+output_file_path);
+			}
 			PrintWriter writer = new PrintWriter(output_file_path, "UTF-8") ;	
 			writer.write(complete_plan);
 			writer.close();
@@ -191,14 +208,14 @@ public class JMeterPlanCreator {
 		
 		System.out.println(" - JMeter Workload Plan Creator");
 		
-		String output_file_path = "files/jmeter_plans/workload_plan.jmx";
+		String output_file_path = "files/jmeter_plans/synthcurves_plan.jmx";
 		
-		String workload_csv_file_path = "";
+		String workload_csv_file_path = "files/datasets/total.csv";
 		String separator = " ";
 		boolean has_headers = false; 
 		int single_duration_sec = 5;
 		int num_jmeter_slaves = 5;
-		int scaling_factor = 300;
+		int scaling_factor = 25;
 
 		try{
 			

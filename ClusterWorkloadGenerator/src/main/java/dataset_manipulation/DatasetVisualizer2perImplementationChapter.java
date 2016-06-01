@@ -15,7 +15,7 @@ import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
 
-public class DatasetVisualizer extends Application {
+public class DatasetVisualizer2perImplementationChapter extends Application {
 
     @Override public void start(Stage stage) {
 
@@ -38,22 +38,18 @@ public class DatasetVisualizer extends Application {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
 
-        xAxis.setLabel("Time [ hours ]");
+        xAxis.setLabel("Time [min]");
+        xAxis.setTickUnit(2);
+        xAxis.setMinorTickCount(4);
         xAxis.setAutoRanging(false);
-        xAxis.setTickUnit(24);
-        xAxis.setMinorTickCount(2);
-        xAxis.setUpperBound(24*14);
-		yAxis.setLabel("Tweets [ tpm ]");
-		  yAxis.setAutoRanging(false);
-		  yAxis.setUpperBound(250);
-		  yAxis.setMinorTickCount(0);
-		  yAxis.setTickUnit(25);
+        xAxis.setUpperBound(20);
+		yAxis.setLabel("Requests per second");
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
         //lineChart.setTitle("Twitter Dataset");
         lineChart.setCreateSymbols(false);  
-        
+        lineChart.setLegendVisible(false);
         System.out.println(" - start generation of the dataset chart");
 
         add_line_to_chart(lineChart, file_paths.get(0), "dataset");
@@ -75,26 +71,27 @@ public class DatasetVisualizer extends Application {
 	    series.setName(name);
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-
+			
 			// line format : 0.00 0.301
 			//     n token :   0    1   
 			String line = reader.readLine();
 			double i = 0;
 			while( line!=null ){
-				if( i<1){ i++; line = reader.readLine(); continue; }
+				//if( i<1){ i++; line = reader.readLine(); continue; }
 				StringTokenizer st = new StringTokenizer(line);
 				double time = Double.parseDouble(st.nextToken()); 
 				time = i;
 				//int scaling_factor=710;
 				int scaling_factor=1;
 				double value = Double.parseDouble(st.nextToken()) * scaling_factor; 
-				//System.out.println(" (time,val) = ("+i+" , "+value+" )");
-			    series.getData().add(new XYChart.Data<Number, Number>(time/60.0, value));
+				System.out.println(" (time,val) = ("+i+" , "+value+" )");
+				
+			    series.getData().add(new XYChart.Data<Number, Number>(time, value));
+			    series.getData().add(new XYChart.Data<Number, Number>(time+0.99, value));
 				line = reader.readLine();
-			
-				if(i%10000==0){System.out.println("    - analyzed "+i+" lines");}
 				i++;
 			}
+			series.getData().add(new XYChart.Data<Number, Number>(i, 0));
 			reader.close();
 			lineChart.getData().add(series);
 			
@@ -109,11 +106,11 @@ public class DatasetVisualizer extends Application {
     public static void main(String[] args) {
     	args = new String[1];
     	// SCALING FACTOR 710
-    	 //args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
-    	 //args[0] = "files/datasets/workload_week_2.csv";  // WEEK X DATASET FILE
-    	 
-    	//args[0] = "files/datasets/workload_day_16.csv";  // DAY X DATASET FILE
-    	args[0] = "files/datasets/workload_day_5_to_18.csv";
+    	// args[0] = "files/datasets/complete_twitter_dataset.csv";  // COMPLETE DATASET FILE
+    	 //args[0] = "files/datasets/workload_week_6.csv";  // WEEK X DATASET FILE
+    	 //args[0] = "files/datasets/workload_day_16.csv";  // DAY X DATASET FILE
+    	 args[0] = "files/datasets/fake_dataset.csv";  // DAY X DATASET FILE
+    	
     	//args[0] = "/home/andrea-muti/Scrivania/clarknet_trace/output_clarknet.txt";  // CLARKNET
     	
     	if(args.length<1){
