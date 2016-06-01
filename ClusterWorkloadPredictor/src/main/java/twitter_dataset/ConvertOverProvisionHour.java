@@ -12,8 +12,12 @@ public class ConvertOverProvisionHour {
 	
 	public static void main(String[] args){
 		
-		String input_file_path = "/home/andrea-muti/Scrivania/dataset_twitter/complete_twitter_dataset.csv";
-		String output_file_path = "/home/andrea-muti/Scrivania/dataset_twitter/overprovision_1h_complete_twitter_dataset.csv";
+		//String input_file_path = "/home/andrea-muti/Scrivania/dataset_twitter/complete_twitter_dataset.csv";
+		//String output_file_path = "/home/andrea-muti/Scrivania/dataset_twitter/overprovision_1h_complete_twitter_dataset.csv";
+		
+		String input_file_path = "resources/datasets/workload_day_5_to_18.csv";
+		String output_file_path = "resources/datasets/overprovision_day_5_to_18.csv";
+		
 		
 		int percentile_overprovision = 95;
 		
@@ -35,7 +39,7 @@ public class ConvertOverProvisionHour {
 			
 			while( line!=null ){
 				
-				StringTokenizer st = new StringTokenizer(line, "\t");
+				StringTokenizer st = new StringTokenizer(line, " ");
 				long time = Long.parseLong(st.nextToken()); 
 				if( minute == 1 ){ initial_ts_of_current_hour = time; }
 

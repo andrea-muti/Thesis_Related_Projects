@@ -9,17 +9,36 @@
 }
 
 .default-color0.chart-series-line {
-  -fx-stroke: red;
+  /* -fx-stroke: darkorange; */
+  -fx-stroke-width: 3.5px;
 }
  
 .default-color1.chart-series-line {
-  -fx-stroke: blue;
+  -fx-stroke: black;
+  -fx-stroke-width: 1.0px;
+}
+
+.default-color2.chart-series-line {
+  -fx-stroke: black;
+  -fx-stroke-width: 1.0px;
+}
+.default-color3.chart-series-line {
+  -fx-stroke: black;
+  -fx-stroke-width: 1.0px;
+}
+.default-color4.chart-series-line {
+  -fx-stroke: black;
+  -fx-stroke-width: 1.0px;
 }
 
 .default-color0.chart-line-symbol {
-  -fx-background-color: red;
+   /* -fx-stroke: darkorange; */
+}
+  
+.default-color1.chart-line-symbol {
+  -fx-background-color: mediumblue;
 }
  
-.default-color1.chart-line-symbol {
-  -fx-background-color: blue;
+.default-color2.chart-line-symbol {
+  -fx-background-color: green;
 }

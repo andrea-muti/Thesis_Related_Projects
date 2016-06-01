@@ -40,12 +40,15 @@ public class OriginalVsOverprovision1hVisualizer extends Application {
         final NumberAxis yAxis = new NumberAxis();
 
         xAxis.setLabel("Time [ hours ]");
-        xAxis.setTickUnit(10);
+        //xAxis.setAutoRanging(false);
+        xAxis.setUpperBound(196);
+        xAxis.setTickUnit(6);
+        xAxis.setMinorTickCount(6);
 		yAxis.setLabel("Tweets [ tpm ]");
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
-        lineChart.setTitle("Twitter Dataset [ Real VS 1 hour Over-Provisioning ]");
+       // lineChart.setTitle("Twitter Dataset [ Real VS 1 hour Over-Provisioning ]");
         lineChart.setCreateSymbols(false);  
         
         add_line_to_chart_original(lineChart, file_paths.get(0), "original_workload");
@@ -137,8 +140,15 @@ public class OriginalVsOverprovision1hVisualizer extends Application {
 	
     public static void main(String[] args) {
     	args = new String[2];
-    	args[0]="resources/datasets/complete_twitter_dataset.csv";
-    	args[1]="resources/datasets/overprovision_1h_complete_twitter_dataset.csv";
+    	//args[0]="resources/datasets/complete_twitter_dataset.csv";
+    	//args[1]="resources/datasets/overprovision_1h_complete_twitter_dataset.csv";
+    	
+    	//args[0]="resources/datasets/single_week_workloads/workload_week_2.csv";
+    	//args[1]="resources/datasets/overprovision_1h_workload_week_2.csv";
+    	
+    	args[0]="resources/datasets/workload_day_5_to_18.csv";
+    	args[1]="resources/datasets/overprovision_day_5_to_18.csv";
+    	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);

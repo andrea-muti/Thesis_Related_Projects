@@ -180,7 +180,7 @@ public class ClusterWorkloadPredictor {
        try {
     	   ClusterWorkloadPredictor predictor = new ClusterWorkloadPredictor();
        
-    	   String outfile_path = "resources/datasets/predictions/prediction_day_16_time_load.csv"; 
+    	   String outfile_path = "resources/datasets/predictions/prediction_day_5_to_13.csv"; 
 		 
     	   PrintWriter writer = new PrintWriter(outfile_path, "UTF-8") ;	
 		
@@ -191,7 +191,9 @@ public class ClusterWorkloadPredictor {
     	   int week_length = day_length * 7;		// how many minutes in a week
     	   //  int complete_workload_length = week_length * 6;	// how many minutes in the complete dataset (actually, the complete dataset is 41 days, not 42)
 		
-    	   for(int i = 0 ; i<day_length; i++){
+    	   int custom_length = week_length * 2;
+    	   
+    	   for(int i = 0 ; i<custom_length; i++){
     		  
     		   long MINUTES   = 1000 * 60 * i;
     		   long next_n_mins = predictor.getInitialWorkloadTimestamp() + MINUTES;

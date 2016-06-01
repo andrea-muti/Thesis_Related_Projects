@@ -14,7 +14,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class WorkloadVsPredictionVisualizer extends Application {
+public class WorkloadVsPredictionVisualizer2 extends Application {
 
     @Override public void start(Stage stage) {
 
@@ -43,26 +43,23 @@ public class WorkloadVsPredictionVisualizer extends Application {
                 
         xAxis.setLabel("Time [ hours ]");
         xAxis.setAutoRanging(false);
-        xAxis.setTickUnit(1.0);
-		xAxis.setUpperBound(24);
-		xAxis.setMinorTickCount(2);
+        xAxis.setTickUnit(12);
+		xAxis.setUpperBound(24*14);
+		xAxis.setMinorTickCount(1);
         
 		yAxis.setLabel("Load [ tpm ]");
-		yAxis.setAutoRanging(false);
+		//yAxis.setAutoRanging(false);
 		yAxis.setUpperBound(100000);
 	
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);       
        
-        lineChart.setTitle("Twitter Workload vs Prediction [ "+period+" ]");
+        //lineChart.setTitle("Twitter Workload vs Prediction [ "+period+" ]");
         lineChart.setCreateSymbols(false);       
         
-       // add_line_to_chart_load(lineChart, file_paths.get(0), "real workload", scaling_factor);
+        add_line_to_chart_load(lineChart, file_paths.get(0), "real workload", scaling_factor);
+       // add_line_to_chart_overprov(lineChart,file_paths.get(2), "approximated workload", scaling_factor);
         add_line_to_chart_pred(lineChart, file_paths.get(1), "predicted workload", scaling_factor);
-        
-        insert_bound_th_lines(lineChart);
-        
-        
-        
+      
         
         Scene scene  = new Scene(lineChart,800,600);       
         stage.setScene(scene);
@@ -70,35 +67,6 @@ public class WorkloadVsPredictionVisualizer extends Application {
         stage.show();
     }
     
-
-	private void insert_bound_th_lines(LineChart<Number, Number> lineChart) {
-		XYChart.Series<Number, Number> seriesl3 = new XYChart.Series<Number, Number>();
-	    seriesl3.setName("3nodi");
-	    seriesl3.getData().add(new XYChart.Data<Number, Number>(0, 64733));
-	    seriesl3.getData().add(new XYChart.Data<Number, Number>(0.5, 64733));
-	    lineChart.getData().add(seriesl3);
-	    
-	    XYChart.Series<Number, Number> seriesl4 = new XYChart.Series<Number, Number>();
-	    seriesl4.setName("4nodi");
-	    seriesl4.getData().add(new XYChart.Data<Number, Number>(0, 74108));
-	    seriesl4.getData().add(new XYChart.Data<Number, Number>(0.5, 74108));
-	    lineChart.getData().add(seriesl4);
-	    
-	    XYChart.Series<Number, Number> seriesl5 = new XYChart.Series<Number, Number>();
-	    seriesl5.setName("5nodi");
-	    seriesl5.getData().add(new XYChart.Data<Number, Number>(0, 82625));
-	    seriesl5.getData().add(new XYChart.Data<Number, Number>(0.5, 82625));
-	    lineChart.getData().add(seriesl5);
-	    
-	    XYChart.Series<Number, Number> seriesl6 = new XYChart.Series<Number, Number>();
-	    seriesl6.setName("6nodi");
-	    seriesl6.getData().add(new XYChart.Data<Number, Number>(0, 91984));
-	    seriesl6.getData().add(new XYChart.Data<Number, Number>(0.5, 91984));
-	    lineChart.getData().add(seriesl6);
-        
-        
-	}
-
 
 	private void add_line_to_chart_load(LineChart<Number, Number> lineChart, String file_path, String name, int scaling_factor) {    
 		System.out.println(" - inserting line of "+name);
@@ -118,11 +86,11 @@ public class WorkloadVsPredictionVisualizer extends Application {
 				st.nextToken(); 
 				double value = Double.parseDouble(st.nextToken().replace(",", ".")) * scaling_factor; 
 
-				double[] fakes = {99000, 97000, 98000, 96000, 94000, 95000};
-				if(value>100000){
-					double ind = (int)Math.random()*6;
-					value=fakes[(int)ind];
-				}
+				//double[] fakes = {99000, 97000, 98000, 96000, 94000, 95000};
+				//if(value>100000){
+				//	double ind = (int)Math.random()*6;
+				//	value=fakes[(int)ind];
+				//}
 				
 				//System.out.println(" (time,val) = ("+i+" , "+value+" )");*/
 			    series.getData().add(new XYChart.Data<Number, Number>(i/60, value));
@@ -166,19 +134,61 @@ public class WorkloadVsPredictionVisualizer extends Application {
 			e.printStackTrace();
 		}	
 	}
+	
+	private void add_line_to_chart_overprov(LineChart<Number, Number> lineChart, String file_path, String name, int scaling_factor) {    
+		System.out.println(" - inserting line of "+name);
+    	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+    	 
+	    series.setName(name);
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file_path));
+			
+			// line format : 0.00 0.301
+			//     n token :   0    1   
+			String line = reader.readLine();
+			double i = 0;
+			while( line!=null ){
+				StringTokenizer st = new StringTokenizer(line);
+				st.nextToken(); 
+				
+				double value = Double.parseDouble(st.nextToken()); 
+				for( int j=0; j<60; j=j+5){
+					series.getData().add(new XYChart.Data<Number, Number>((i+j)/60, value));
+				}
+				line = reader.readLine();
+				i=i+60;
+				
+			}
+			reader.close();
+			lineChart.getData().add(series);
+			
+		} catch (IOException e) {
+			System.err.println("Error in opening|writing|closing the file: "+file_path);
+			e.printStackTrace();
+		}	
+	}
+	
 
 
     public static void main(String[] args) {
     	int x = 16;
-    	int scaling_factor = 670;
-    	args = new String[4];
-    	//args[0]="Week "+x;
+    	int scaling_factor = 1;
+    	args = new String[5];
+    	args[0]="Week "+x;
     	args[0]="Day "+x;
     	args[1]=""+scaling_factor;
     	args[2]="/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadPredictor/"
     			+ "resources/datasets/single_day_workloads/workload_day_"+x+".csv"; // carico giorno vero
     	args[3]="resources/datasets/predictions/prediction_day_"+x+"_time_load.csv";  // carico giorno predicted
     	
+    	/*
+    	args[0]="Week "+3;
+    	args[1]=""+scaling_factor;
+    	args[2]="/home/andrea-muti/git/Thesis_Related_Projects/ClusterWorkloadPredictor/"
+    			+ "resources/datasets/workload_day_5_to_18.csv"; 
+    	args[3]="resources/datasets/predictions/prediction_day_5_to_18.csv";  
+    	args[4]="resources/datasets/overprovision_day_5_to_18.csv";  
+    	*/
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
