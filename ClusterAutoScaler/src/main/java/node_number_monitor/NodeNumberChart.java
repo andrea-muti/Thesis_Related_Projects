@@ -21,6 +21,8 @@ public class NodeNumberChart extends Application {
 	
 	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
 	double single_duration_sec = 12.0;
+	
+	boolean grafico_scaling_actions_dettaglio=false;
 
     @Override public void start(Stage stage) {
 
@@ -52,6 +54,7 @@ public class NodeNumberChart extends Application {
 		yAxis.setLabel("Number Of Nodes");
 		yAxis.setTickUnit(1);
 		yAxis.setAutoRanging(false);
+
 		yAxis.setUpperBound(7);
 		yAxis.setMinorTickCount(0);
 		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
@@ -67,6 +70,14 @@ public class NodeNumberChart extends Application {
 				return null;
 			}
 		});
+		
+		if(grafico_scaling_actions_dettaglio){
+			 xAxis.setUpperBound(21);
+		     xAxis.setLowerBound(9);
+		     yAxis.setUpperBound(2);
+			 yAxis.setUpperBound(7);
+
+		}
 		
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
@@ -128,7 +139,8 @@ public class NodeNumberChart extends Application {
 				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				time = time/60.0;
 				int value = Integer.parseInt(st.nextToken()); 
-			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
+			
+			    series.getData().add(new XYChart.Data<Number, Number>(time, value));	
 				line = reader.readLine();
 			}
 			reader.close();

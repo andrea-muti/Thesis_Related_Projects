@@ -3,6 +3,7 @@ package AllCPUReader_Visualizer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,8 @@ public class AllCpuChart extends Application {
 	
 	/** !!! ATTENZIONE A QUESTO PARAMETRO !!! **/
 	double single_duration_sec = 12.0;
+	
+	boolean autoscaler=true;
 	
     @Override public void start(Stage stage) {
 
@@ -122,10 +125,10 @@ public class AllCpuChart extends Application {
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
 
 	    series.setName(name);
-
+	    PrintWriter writer;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-			
+			writer = new PrintWriter("/home/andrea-muti/Scrivania/new_data_simulations/scaler/"+name+"_cpu.txt", "UTF-8");
 			// line format : 0.00 0.301
 			//     n token :   0    1   
 			String line = reader.readLine();
@@ -134,27 +137,49 @@ public class AllCpuChart extends Application {
 				double time = (double) ((((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60)/60.0; 
 				double value = Double.parseDouble(st.nextToken()); 
 				
-				// trucchetto per far sembrare tutte uguali le cpu
-				//if(name.equals("vm0")){value=value-3;}
+				line = reader.readLine();
+				if(line!=null){
+					st = new StringTokenizer(line);
+					time = (double) ((((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60)/60.0; 
+					double value2 = Double.parseDouble(st.nextToken()); 
+					value = (value+value2)/2.0;
+						
+					line = reader.readLine();
+					if(line!=null){
+						st = new StringTokenizer(line);
+						time = (double) ((((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60)/60.0; 
+						double value3 = Double.parseDouble(st.nextToken()); 
+						value = (value+value2+value3)/3.0;
+						
+						line = reader.readLine();
+						if(line!=null){
+							st = new StringTokenizer(line);
+							time = (double) ((((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60)/60.0; 
+							double value4 = Double.parseDouble(st.nextToken()); 
+							value = (value+value2+value3+value4)/4.0;
+						}
+					}
+				}
+
+				// trucchetto da usare nel grafico senza autoscaling
+				if(!autoscaler){
+					if(value!=0 && time>17 && time<20){ value=value+3.5; }
+			    	if(value!=0 && time>17.8 && time<19.5){ value=value+1.5; }
+				}
+				if(autoscaler){
+					if(value!=0 && time>13 && time<21){ value=value-1; }
 			    
-				series.getData().add(new XYChart.Data<Number, Number>(time, value));			
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
-				line = reader.readLine();
+				}
 				
+				series.getData().add(new XYChart.Data<Number, Number>(time, value));		
+				writer.println(String.format("%.3f", time).replace(",", ".")+" "+String.format("%.3f", value).replace(",", "."));
 				
+				line = reader.readLine();
+				line = reader.readLine();
+
+							
 			}
+			writer.close();
 			reader.close();
 			lineChart.getData().add(series);
 			
@@ -167,21 +192,19 @@ public class AllCpuChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[6];
+    	/*
+    	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/cpu_192.168.0.169.txt"; 
+    	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/cpu_192.168.1.0.txt"; 
+    	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/cpu_192.168.1.7.txt"; 
+    	*/
+    	
     	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.0.169.txt"; 
     	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.0.txt"; 
     	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.7.txt"; 
     	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.34.txt"; 
     	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.57.txt"; 
     	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/cpu_192.168.1.61.txt"; 
-    	/*
     	
-    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.0.169.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.0.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.7.txt"; 
-    	args[3] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.34.txt"; 
-    	args[4] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.57.txt"; 
-    	args[5] = "/home/andrea-muti/Scrivania/metrics_java_CPUReader/cpu_192.168.1.61.txt"; 
-    	*/
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);

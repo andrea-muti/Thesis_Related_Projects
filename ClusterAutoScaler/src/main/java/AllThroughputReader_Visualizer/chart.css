@@ -6,4 +6,19 @@
 }
 .chart-plot-background {
     -fx-background-color: white;
+    
 }
+.chart-series-line {    
+    -fx-stroke-width: 1.5px;
+    -fx-effect:  null;
+}
+
+.default-color6.chart-line-symbol {
+  -fx-background-color: black, black;
+}
+.default-color6.chart-series-line {
+  -fx-stroke: black; 
+}
+.default-color6.chart-legend-item-symbol{
+    -fx-background-color: black, white; 
+ }

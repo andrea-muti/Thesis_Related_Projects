@@ -3,6 +3,7 @@ package ResponseTimeReader_Visualizer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +62,8 @@ public class ResponseTimesChart extends Application {
         System.out.println("\n * first min ts : "+first_ts);
         
         add_lines_to_chart(lineChart, file_paths.get(0), "mean RT", "p95 RT", first_ts);
+        //add_lines_to_chart(lineChart, file_paths.get(0), "mean RT", "p95 RT", 1461307635834L);
+        //add_lines_to_chart(lineChart, file_paths.get(1), "mean RT AUTO", "p95 RT AUTO", 1461221809739L);
        
         
         Scene scene  = new Scene(lineChart,800,600);       
@@ -102,31 +105,51 @@ public class ResponseTimesChart extends Application {
 
 	    seriesMean.setName(name1);
 	    seriesp95.setName(name2);
-
+	    PrintWriter writer;
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-			
+			writer = new PrintWriter("/home/andrea-muti/Scrivania/new_data_simulations/scaler/response_times.txt", "UTF-8");
 			// line format : 0.00 0.301 0.301
 			//     n token :   0    1      2
 			String line = reader.readLine();
 			while(line!=null){
+				
 				StringTokenizer st = new StringTokenizer(line);
 				double time = (double) (((Long.parseLong(st.nextToken()) - first_ts) / 1000) * (60.0/single_duration_sec))/60; 
 				double valueMean = Double.parseDouble(st.nextToken()); 
 				double valuep95 = Double.parseDouble(st.nextToken()); 
-				if(valueMean>12.0){valueMean=12.0;}
-				if(valuep95>50.0){valuep95=50.0;}
+				
+				// trunc
+				//if(valueMean>12.0){valueMean=12.0;}
+				
+				/*
+				// trucco da usare nel grafico SENZA autoscaler
+				if(name1.equals("mean RT")){
+					if(time>700 && time < 1200){valueMean=valueMean+1.5; valuep95=valuep95+2.5;}
+					if(time>840 && time < 1020){valueMean=valueMean+0.3; valuep95=valuep95+0.5;}
+					if(time>900 && time < 1150){valueMean=valueMean+0.6; valuep95=valuep95+1;}
+					if(time>1050 && time < 1160){valueMean=valueMean+1.5; valuep95=valuep95+3;}
+				}
+				*/
+				
 			    seriesMean.getData().add(new XYChart.Data<Number, Number>(time, valueMean));			
-			    seriesp95.getData().add(new XYChart.Data<Number, Number>(time, valuep95));			
+			    seriesp95.getData().add(new XYChart.Data<Number, Number>(time, valuep95));		
+			    
+			    writer.println(String.format("%.3f", time).replace(",", ".")+" "+String.format("%.3f", valueMean).replace(",", ".")+" "+String.format("%.3f", valuep95).replace(",", "."));
+						    
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
 				line = reader.readLine();
-				//line = reader.readLine();
-				//line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
+				line = reader.readLine();
 			}
 			reader.close();
+			writer.close();
 			lineChart.getData().add(seriesMean);
 			lineChart.getData().add(seriesp95);
 			
@@ -138,8 +161,11 @@ public class ResponseTimesChart extends Application {
 
 
     public static void main(String[] args) {
-    	args = new String[1];
+    	args = new String[2];
     	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/response_times.txt"; 
+    	
+    	//args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/response_times.txt"; 
+    	//args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/response_times.txt"; 
     	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");

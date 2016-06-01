@@ -192,9 +192,9 @@ public class AutoScaler{
 			ScalingAction action = decide_scaling_action(wl_now_ts);
 			
 			// EXECUTE the decided scaling action
-			execute_scaling_action(action, wl_now_ts);
+			execute_scaling_action(action);
 					
-			if(!action.getAction().equals(AutoScaleConstants.KEEP_CURRENT)){ wait_expected_end(); }
+			//if(!action.getAction().equals(AutoScaleConstants.KEEP_CURRENT)){ wait_expected_end(); }
 			
 			try{ Thread.sleep(1000*n_sec_between_sampling); }
 		    catch(Exception e){}
@@ -230,7 +230,7 @@ public class AutoScaler{
 		}
 	}
 	
-	private void execute_scaling_action(ScalingAction action, long now_ts_wl_time){
+	private void execute_scaling_action(ScalingAction action){
 		System.out.println(" - [AutoScaler] decided scaling decision : "+action.format_as_printable_message(this.current_node_number));
 		
 		if(!action.getAction().equals(AutoScaleConstants.KEEP_CURRENT)){

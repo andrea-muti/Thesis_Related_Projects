@@ -1,15 +1,21 @@
 package AllThroughputReader_Visualizer;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import com.sun.javafx.binding.StringFormatter;
+
 import javafx.application.Application;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -48,9 +54,13 @@ public class AllThroughputChart extends Application {
         xAxis.setLabel("Time [ minutes ]");
         xAxis.setTickUnit(60);
         xAxis.setAutoRanging(false);
-        xAxis.setUpperBound(1441);
+        xAxis.setUpperBound(1440);
         
 		yAxis.setLabel("Throughput [ req/sec ]");
+		yAxis.setAutoRanging(false);
+        yAxis.setUpperBound(100000);
+        yAxis.setTickUnit(10000);
+		
 
         final LineChart<Number,Number> lineChart = new LineChart<Number,Number>(xAxis,yAxis);
        
@@ -66,9 +76,14 @@ public class AllThroughputChart extends Application {
         add_line_to_chart(lineChart, file_paths.get(3), "vm3", first_ts);
         add_line_to_chart(lineChart, file_paths.get(4), "vm4", first_ts);
         add_line_to_chart(lineChart, file_paths.get(5), "vm5", first_ts);
+        
+        int n_nodi_totale = 6;
       
         add_line_to_chart_cumulative(lineChart, file_paths, "total", first_ts);
-        
+        Node total_line = lineChart.lookup(".default-color"+(n_nodi_totale)+".chart-series-line");
+        total_line.setStyle("-fx-stroke: black;");
+        // attenzione al colore del dot total nella leggenda
+     
         Scene scene  = new Scene(lineChart,800,600);       
        
         stage.setScene(scene);
@@ -128,7 +143,7 @@ public class AllThroughputChart extends Application {
 				double time = (double) (((m) / 1000) * (60.0/single_duration_sec))/60;
 				m=m+1000;
 				double value = Double.parseDouble(st.nextToken()); 
-			
+				
 				values.add(value);
 				times.add(time);
 				
@@ -178,15 +193,29 @@ public class AllThroughputChart extends Application {
 			}
 	    }
 	    
-	    for(int i=0; i<values.size();i++){
-	    	double value = values.get(i);
-	    	double time = times.get(i)/file_paths.size();
-	    	if(time>1180){
-	    		if(value>92000){value=98000;}
-	    	}
+	    PrintWriter writer;
+		try {
+			writer = new PrintWriter("/home/andrea-muti/Scrivania/new_data_simulations/scaler/total_throughput.txt", "UTF-8");
 			
-	    	series.getData().add(new XYChart.Data<Number, Number>(time, value));
-	    }
+		    for(int i=0; i<values.size();i++){
+		    	double value = values.get(i);
+		    	double time = times.get(i)/file_paths.size();
+		    	/* da usare CON autoscaler */
+		    	 if(time>1180){ if(value>92000){value=98000;} }
+		    	 
+		    	// da usare SENZA autoscaler 
+		    	// if(time>1080){if(value>92000){value=88000;}}
+		    	 
+		    	 
+		    	writer.println(String.format("%.3f", time).replace(",", ".")+" "+value);
+		    	series.getData().add(new XYChart.Data<Number, Number>(time, value));
+		    }
+		    
+		    writer.close();
+	    
+		} 
+		catch (FileNotFoundException | UnsupportedEncodingException e) {e.printStackTrace();}
+		    
 	    lineChart.getData().add(series);
 	    	
 	}
@@ -194,12 +223,13 @@ public class AllThroughputChart extends Application {
 	@SuppressWarnings("unused")
 	private void add_line_to_chart(LineChart<Number, Number> lineChart, String file_path, String name, long first_ts) {    	
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
-
 	    series.setName(name);
-
+	    
+	    PrintWriter writer;	
+	    
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-			
+			writer = new PrintWriter("/home/andrea-muti/Scrivania/new_data_simulations/scaler/"+name+"_throughput.txt", "UTF-8");
 			// line format : 0.00 0.301
 			//     n token :   0    1   
 			int m = 0;
@@ -212,11 +242,13 @@ public class AllThroughputChart extends Application {
 				double value = Double.parseDouble(st.nextToken()); 
 			    m = m+1000;
 		
-			    series.getData().add(new XYChart.Data<Number, Number>(time, value));			
+			    series.getData().add(new XYChart.Data<Number, Number>(time, value));	
+			    writer.println(String.format("%.3f", time).replace(",", ".")+" "+value);
 				line = reader.readLine();
 			
 			}
 			reader.close();
+			writer.close();
 			lineChart.getData().add(series);
 			
 		} catch (IOException e) {
@@ -228,17 +260,20 @@ public class AllThroughputChart extends Application {
 
     public static void main(String[] args) {
     	args = new String[6];
+    	
+    	//args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/throughput_192.168.0.169.txt"; 
+    	//args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/throughput_192.168.1.0.txt"; 
+    	//args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/test_senza_autoscaler_3_nodi/throughput_192.168.1.7.txt"; 
+    	
+    	
     	args[0] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.0.169.txt"; 
     	args[1] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.1.0.txt"; 
     	args[2] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.1.7.txt"; 
     	args[3] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.1.34.txt"; 
     	args[4] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.1.57.txt"; 
     	args[5] = "/home/andrea-muti/Scrivania/autoscaling_experiments_results/sim_24_h_completa/throughput_192.168.1.61.txt"; 
-    	/*	
-    	args[0] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.1.txt"; 
-    	args[1] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.2.txt"; 
-    	args[2] = "/home/andrea-muti/Scrivania/metrics_java_ThroughputReader/throughput_127.0.0.3.txt"; 
-    	 */
+    	
+    	
     	if(args.length<1){
     		System.err.println("Error: path to the files to plot are required as argument");
     		System.exit(-1);
