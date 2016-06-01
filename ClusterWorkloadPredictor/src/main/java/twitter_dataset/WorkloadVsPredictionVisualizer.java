@@ -100,6 +100,7 @@ public class WorkloadVsPredictionVisualizer extends Application {
 	}
 
 
+	@SuppressWarnings("unused")
 	private void add_line_to_chart_load(LineChart<Number, Number> lineChart, String file_path, String name, int scaling_factor) {    
 		System.out.println(" - inserting line of "+name);
     	XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();

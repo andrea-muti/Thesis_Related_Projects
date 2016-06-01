@@ -12,8 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import com.sun.javafx.binding.StringFormatter;
-
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
